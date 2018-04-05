@@ -1,2 +1,2 @@
 # Blockstack-SSO
-Single sign-on for blockstack.
+Single sign-on for PHP apps using blockstack.

@@ -1,7 +1,7 @@
 {
-  "name": "Hello, Blockstack",
+  "name": "Wordpress Blockstack Log-in",
   "start_url": "localhost:5000",
-  "description": "A simple demo of Blockstack Auth",
+  "description": "The blockstack plugin to log into wordpress with blockstack",
   "icons": [{
     "src": "https://helloblockstack.com/icon-192x192.png",
     "sizes": "192x192",

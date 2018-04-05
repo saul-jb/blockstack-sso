@@ -1,0 +1,15 @@
+{
+	"name": "sso-for-apps",
+	"version": "1.0.0",
+	"description": "SSO for PHP apps using the blockstack authentication.",
+	"main": "index.js",
+	"scripts": {
+		"server": "node server.js"
+	},
+	"author": "Saul Boyd",
+	"license": "ISC",
+	"dependencies": {
+		"blockstack": "^0.17.1",
+		"express": "^4.16.3"
+	}
+}
