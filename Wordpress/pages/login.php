@@ -3,6 +3,10 @@
 * Template Name: Login Page
 */
 ?>
+
+<?php
+header("Access-Control-Allow-Origin: *");
+?>
 test
 <div class="wp_login_form">
 <div class="form_heading"> Login Form </div>
@@ -19,7 +23,7 @@ $args = array(
 </div>
 
 <!-- include the blockstack file -->
-<script src="<?php echo get_site_url() . ':5000'; ?>"></script>
+<script src="<?php echo plugin_dir_url( __FILE__ ) . '../js/blockstack.min.js'; ?>"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function(event) {
 	document.getElementById("signin-button").addEventListener("click", function(event) {

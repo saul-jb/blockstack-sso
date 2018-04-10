@@ -44,6 +44,7 @@ function rewriteRules($wp_rewrite){
 function queryVars($query_vars){
 	$query_vars[] = "clogin";
 	$query_vars[] = "manifest";
+	$query_vars[] = "authResponse";
 
 	return $query_vars;
 };
@@ -52,17 +53,22 @@ function queryVars($query_vars){
 function templateRedirect(){
 	$clogin = intval(get_query_var("clogin"));
 	if($clogin){
-		include plugin_dir_path( __FILE__ ) . 'login.php';
+		include plugin_dir_path( __FILE__ ) . 'pages/login.php';
 		die;
 	}
 
 	$manifest = intval( get_query_var("manifest"));
 	if($manifest){
-		include plugin_dir_path( __FILE__ ) . "manifest.php";
+		include plugin_dir_path( __FILE__ ) . "pages/manifest.php";
+		die;
+	}
+
+	$authResponse = get_query_var("authResponse");
+	if($authResponse){
+		include plugin_dir_path( __FILE__ ) . "pages/beforeAuth.php";
 		die;
 	}
 };
-
 //________________________________________________________________________________________________________________________
 
 function goto_login_page() {

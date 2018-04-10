@@ -1,0 +1,22 @@
+{
+	"name": "build",
+	"version": "1.0.0",
+	"description": "This broject is for building the client side files.",
+	"main": " ",
+	"scripts": {
+		"build": "browserify build.js -o blockstack.js",
+		"translate": "babel blockstack.js --out-file blockstack.es5.js",
+		"compress": "uglifyjs --self -c -m -o blockstack.min.js"
+	},
+	"author": "Saul Boyd",
+	"license": "ISC",
+    "devDependencies": {
+		"babel-cli": "^6.26.0",
+		"babel-preset-env": "^1.6.1",
+		"browserify": "^14.1.0",
+	    "uglify-js": "^3.3.20"
+	},
+	"dependencies": {
+		"blockstack": "^0.15.0"
+	}
+}

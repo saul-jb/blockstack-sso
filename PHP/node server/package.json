@@ -9,7 +9,7 @@
 	"author": "Saul Boyd",
 	"license": "ISC",
 	"dependencies": {
-		"blockstack": "^0.17.1",
-		"express": "^4.16.3"
+		"express": "^4.16.3",
+		"jsontokens": "^0.7.7"
 	}
 }

@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function(event) {
 	document.getElementById('signin-button').addEventListener('click', function(event) {
 		event.preventDefault()
-		blockstack.redirectToSignIn()
+		blockstack.redirectToSignIn(window.location.href)
 	})
 	document.getElementById('signout-button').addEventListener('click', function(event) {
 		event.preventDefault()
