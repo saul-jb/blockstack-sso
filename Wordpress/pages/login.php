@@ -6,6 +6,8 @@
 
 <?php
 header("Access-Control-Allow-Origin: *");
+header('Access-Control-Allow-Methods: "GET, POST, PUT, DELETE"');
+header('Access-Control-Allow-Headers: "Content-Type"');
 ?>
 test
 <div class="wp_login_form">
@@ -13,9 +15,9 @@ test
 <button id="signin-button">Sign in with blockstack</button>
 <?php
 $args = array(
-	'redirect' => home_url(),
-	'id_username' => 'user',
-	'id_password' => 'pass',
+        'redirect' => home_url(),
+        'id_username' => 'user',
+        'id_password' => 'pass',
 );
 ?>
 
@@ -25,10 +27,15 @@ $args = array(
 <!-- include the blockstack file -->
 <script src="<?php echo plugin_dir_url( __FILE__ ) . '../js/blockstack.min.js'; ?>"></script>
 <script>
-document.addEventListener("DOMContentLoaded", function(event) {
-	document.getElementById("signin-button").addEventListener("click", function(event) {
-		event.preventDefault()
-		blockstack.redirectToSignIn()
-	})
-});
+	document.addEventListener("DOMContentLoaded", function(event) {
+		document.getElementById("signin-button").addEventListener("click", function(event) {
+			event.preventDefault()
+
+			var server = "<?php echo $_SERVER['SERVER_NAME'] ?>";
+			var req = blockstack.makeAuthRequest();
+			var url = "http:\/\/" + server + "/?authResponse="  + req;
+
+			window.location.replace(url);
+		});
+	});
 </script>

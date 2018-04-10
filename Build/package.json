@@ -6,7 +6,9 @@
 	"scripts": {
 		"build": "browserify build.js -o blockstack.js",
 		"translate": "babel blockstack.js --out-file blockstack.es5.js",
-		"compress": "uglifyjs --self -c -m -o blockstack.min.js"
+		"compress": "uglifyjs blockstack.es5.js -c -m -o blockstack.min.js",
+		"clean": "rm blockstack.js blockstack.es5.js",
+		"all": "npm run build && npm run translate && npm run compress && npm run clean"
 	},
 	"author": "Saul Boyd",
 	"license": "ISC",

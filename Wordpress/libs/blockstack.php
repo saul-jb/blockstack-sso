@@ -1,7 +1,7 @@
 <?php
 /*
 	This class intergrates blockstack with php.
-	Author:	Saul Boyd (avikar.io)
+	Author: Saul Boyd (avikar.io)
 	License: GPL (http://www.gnu.org/copyleft/gpl.html)
 */
 
@@ -23,12 +23,6 @@ class Blockstack {
 
 		if($token == false){
 			return $this->respond(true, "invalid JWT token");
-		}
-
-		$publicAddr = $this->getPubKey($token[1]);
-
-		if(!$this->isBlockstackAddress($publicAddr)){
-			return $this->respond(true, "invalid address");
 		}
 
 		// hash the token and pass all the info to the node server and test the response
@@ -83,34 +77,6 @@ class Blockstack {
 		}
 
 		return $authParts;
-	}
-
-	private function getPubKey($payload){
-		$iss = $payload["iss"];
-		$parts = explode("btc-addr:", $iss);
-
-		return $parts[1];
-	}
-
-	private function isBlockstackAddress($addr){
-		// This function tests the address to check that it is associated with blockstack
-		// Returns true if it is a blockstack address
-
-		$url = "https://gaia.blockstack.org/hub/" . $addr . "/profile.json";
-		$file = file_get_contents($url);
-		$fileJSON = json_decode($file, true);
-
-		if(json_last_error() != JSON_ERROR_NONE){
-			// File is not json - a valid address should return json data
-			return false;
-		}
-
-		if(!isset($fileJSON[0]["decodedToken"]["payload"]["claim"]["name"])){
-			// Json data does not have the correct info accociated with it
-			return false;
-		}
-
-		return true;
 	}
 }
 ?>
