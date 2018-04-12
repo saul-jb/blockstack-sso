@@ -25,17 +25,12 @@ $args = array(
 </div>
 
 <!-- include the blockstack file -->
-<script src="<?php echo plugin_dir_url( __FILE__ ) . '../js/blockstack.min.js'; ?>"></script>
+<script src="<?php echo plugin_dir_url( __FILE__ ) . '../js/blockstack sso.js'; ?>"></script>
 <script>
 	document.addEventListener("DOMContentLoaded", function(event) {
 		document.getElementById("signin-button").addEventListener("click", function(event) {
-			event.preventDefault()
-
-			var server = "<?php echo $_SERVER['SERVER_NAME'] ?>";
-			var req = blockstack.makeAuthRequest();
-			var url = "http:\/\/" + server + "/?authResponse="  + req;
-
-			window.location.replace(url);
+			event.preventDefault();
+			Blockstack_sso.login();
 		});
 	});
 </script>

@@ -32,8 +32,9 @@ function init(){
 
 function rewriteRules($wp_rewrite){
 	$feed_rules = array(
-		"blockstack-login/?$" => "index.php?clogin=1",
-		"manifest.json/?$" => "index.php?manifest=1"
+		"blockstack-login/?$" => "index.php?bslogin=1",
+		"manifest.json/?$" => "index.php?manifest=1",
+		"blockstack-auth/?$" => "index.php?bsauth=1"
 	);
 	$wp_rewrite->rules = $feed_rules + $wp_rewrite->rules;
 
@@ -42,17 +43,19 @@ function rewriteRules($wp_rewrite){
 
 
 function queryVars($query_vars){
-	$query_vars[] = "clogin";
+	$query_vars[] = "bslogin";
 	$query_vars[] = "manifest";
 	$query_vars[] = "authResponse";
+	$query_vars[] = "bsauth";
+	$query_vars[] = "bsrequest";
 
 	return $query_vars;
 };
 
 
 function templateRedirect(){
-	$clogin = intval(get_query_var("clogin"));
-	if($clogin){
+	$bslogin = intval(get_query_var("bslogin"));
+	if($bslogin){
 		include plugin_dir_path( __FILE__ ) . 'pages/login.php';
 		die;
 	}
@@ -68,11 +71,23 @@ function templateRedirect(){
 		include plugin_dir_path( __FILE__ ) . "pages/beforeAuth.php";
 		die;
 	}
+
+	$bsrequest = get_query_var("bsrequest");
+	if($bsrequest){
+		include plugin_dir_path( __FILE__ ) . "pages/request.php";
+		die;
+	}
+
+	$bsauth = intval(get_query_var("bsauth"));
+	if($bsauth){
+		include plugin_dir_path( __FILE__ ) . "pages/auth.php";
+		die;
+	}
 };
 //________________________________________________________________________________________________________________________
 
 function goto_login_page() {
-	$login_page = home_url("/index.php?clogin=1");
+	$login_page = home_url("/index.php?bslogin=1");
 	$page = basename($_SERVER["REQUEST_URI"]);
 
 	if($page == "wp-login.php" && $_SERVER["REQUEST_METHOD"] == "GET") {
@@ -83,13 +98,13 @@ function goto_login_page() {
 
 
 function login_failed() {
-	$login_page = home_url( "/index.php?clogin=1" );
+	$login_page = home_url( "/index.php?bslogin=1" );
 	wp_redirect( $login_page . "&login=failed");
 	exit;
 }
 
 function blank_username_password( $user, $username, $password ) {
-	$login_page = home_url( "/index.php?clogin=1" );
+	$login_page = home_url( "/index.php?bslogin=1" );
 	if( $username == "" || $password == "" ) {
 		wp_redirect( $login_page . "&login=blank" );
 		exit;

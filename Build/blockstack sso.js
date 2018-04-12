@@ -4,22 +4,14 @@ window.encryption = require("./node_modules/blockstack/lib/encryption.js");
 window.authApp = require("./node_modules/blockstack/lib/auth/authApp.js");
 
 
-window.Blockstack_sso = ((redirectUrl = false) => {
-	var login, logout, isSignedIn, decryptHash, phpSignIn, getUrlParameter, hash;
+var Blockstack_sso = (() => {
+	var login, logout, isSignedIn, decryptHash, phpSignIn, getUrlParameter, postData;
 
 	login = () => {
-		//make sure the user somehow isn't already logged in - fixes the bugs too
-		logout();
 		var req = blockstack.makeAuthRequest();
+		var url = "http:\/\/" + window.location.hostname + "/?authResponse="  + req;
 
-		if(!redirectUrl){
-			redirectUrl = "http:\/\/" + window.location.hostname + "/?bsrequest="  + req;
-		}
-		else{
-			redirectUrl = redirectUrl + req;
-		}
-
-		window.location.replace(redirectUrl);
+		window.location.replace(url);
 	};
 
 	logout = () => {
@@ -36,8 +28,8 @@ window.Blockstack_sso = ((redirectUrl = false) => {
 			successCallback(userData);
 		}
 		else if (blockstack.isSignInPending()) {
-			clearTimeout(failureTimout);
 			blockstack.handlePendingSignIn().then((userData) => {
+				clearTimeout(failureTimout);
 				successCallback(userData);
 			}).catch(err => {
 				failureCallback(err);
@@ -46,23 +38,45 @@ window.Blockstack_sso = ((redirectUrl = false) => {
 	};
 
 	decryptHash = (encryptedData) => {
-		console.log("encryptedData", encryptedData)
 		var transitKey = authApp.getTransitKey();
 		var hash = encryption.decryptECIES(transitKey, encryptedData);
 
 		return hash;
 	};
 
-	phpSignIn = (verificationHash, name, key, authUrl) => {
-		var id, data, redirectUrl;
+	phpSignIn = (verificationHash, name, callback) => {
+		var id, decodedToken, token, postData;
 
-		id = hash(key).toString();
-		console.log("ID", id);
+		token = getUrlParameter("authResponse");
+		decodedToken = jsontokens.decodeToken(token);
+		id = decodedToken.payload.public_keys[0];
 
-		redirectUrl = authUrl + "?name=" + name + "&id=" + id + "&verificationHash=" + verificationHash;
+		postData = {
+			token,
+			id,
+			verificationHash,
+			name
+		};
 
-		window.location.replace(redirectUrl);
+		postData(postData, callback);
 	};
+
+	postData = (data, callback) => {
+		var http = new XMLHttpRequest();
+		var url = "get_data.php";
+		var params = "name=" + data.name + "&id=" + data.id + "&hash=" + data.verificationHash + "&token=" + data.token;
+
+		http.open("POST", url, true);
+		http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+		http.onreadystatechange = function() {
+			if(http.readyState == 4 && http.status == 200) {
+				callback(http.responseText);
+			}
+		}
+
+		http.send(params);
+	}
 
 	getUrlParameter = (sParam) => {
 		var sPageURL, sURLVariables, i, sParameterName;
@@ -79,22 +93,6 @@ window.Blockstack_sso = ((redirectUrl = false) => {
 		}
 	};
 
-	hash = (data) => {
-		var hash = 0, i, chr;
-
-		if (data.length === 0){
-			return hash
-		};
-
-		for (i = 0; i < data.length; i++) {
-			chr   = data.charCodeAt(i);
-			hash  = ((hash << 5) - hash) + chr;
-			hash |= 0; // Convert to 32bit integer
-		}
-
-		return hash;
-	};
-
 	return {
 		login: login,
 		logout: logout,
@@ -103,3 +101,5 @@ window.Blockstack_sso = ((redirectUrl = false) => {
 		phpSignIn: phpSignIn
 	};
 })();
+
+exports.Blockstack_sso = Blockstack_sso
