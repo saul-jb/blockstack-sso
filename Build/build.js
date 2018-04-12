@@ -3,27 +3,39 @@ window.jsontokens = require('jsontokens');
 window.encryption = require("./node_modules/blockstack/lib/encryption.js");
 window.authApp = require("./node_modules/blockstack/lib/auth/authApp.js");
 
+window.Blockstack_sso = (() => {
+	var login, logout, isSignedIn, decryptHash, phpSignIn/*, getUrlParameter*/, hash, getData;
 
-window.Blockstack_sso = ((redirectUrl = false) => {
-	var login, logout, isSignedIn, decryptHash, phpSignIn, getUrlParameter, hash;
-
-	login = () => {
+	login = (serverUrl = false, blockstackServiceUrl = "http://localhost:8888") => {
 		//make sure the user somehow isn't already logged in - fixes the bugs too
 		logout();
 		var req = blockstack.makeAuthRequest();
 
-		if(!redirectUrl){
-			redirectUrl = "http:\/\/" + window.location.hostname + "/?bsrequest="  + req;
-		}
-		else{
-			redirectUrl = redirectUrl + req;
-		}
+		serverUrl = serverUrl ? serverUrl + req : "http:\/\/" + window.location.hostname + "/?bsrequest="  + req;
 
-		window.location.replace(redirectUrl);
+		getData(serverUrl).then((res) => {
+			var data;
+
+			try{
+				data = JSON.parse(res);
+			}
+			catch (e){
+				data = {error: true, data: e}
+			}
+
+			if(!data.error){
+				window.location.replace(blockstackServiceUrl + "/auth?authRequest=" + data.data);
+			}
+			else{
+				console.error(data.data);
+			}
+		}).catch((err) => {
+			console.error(err);
+		});
 	};
 
-	logout = () => {
-		blockstack.signUserOut(window.location.href);
+	logout = (redirectUrl = null) => {
+		blockstack.signUserOut(redirectUrl);
 	};
 
 	isSignedIn = (successCallback, failureCallback, timeout = 2000) => {
@@ -61,9 +73,25 @@ window.Blockstack_sso = ((redirectUrl = false) => {
 
 		redirectUrl = authUrl + "?name=" + name + "&id=" + id + "&verificationHash=" + verificationHash;
 
-		window.location.replace(redirectUrl);
-	};
+		//window.location.replace(redirectUrl);
 
+		getData(redirectUrl).then((res) => {
+			console.log(res);
+			var data;
+
+			try{
+				data = JSON.parse(res);
+			}
+			catch (e){
+				data = {error: true, data: e}
+			}
+
+			data.error ? console.error(data.data) : console.log(data.data);
+		}).catch((err) => {
+			console.error(err);
+		});
+	};
+/*
 	getUrlParameter = (sParam) => {
 		var sPageURL, sURLVariables, i, sParameterName;
 
@@ -77,7 +105,7 @@ window.Blockstack_sso = ((redirectUrl = false) => {
 				return sParameterName[1] === undefined ? false : sParameterName[1];
 			}
 		}
-	};
+	};*/
 
 	hash = (data) => {
 		var hash = 0, i, chr;
@@ -94,6 +122,16 @@ window.Blockstack_sso = ((redirectUrl = false) => {
 
 		return hash;
 	};
+
+	getData = (url) => {
+		return new Promise((resolve, reject) => {
+			const req = new XMLHttpRequest();
+			req.open('GET', url);
+			req.onload = () => req.status === 200 ? resolve(req.response) : reject(Error(req.statusText));
+			req.onerror = (e) => reject(Error(`Network Error: ${e}`));
+			req.send();
+		});
+	}
 
 	return {
 		login: login,
