@@ -47,10 +47,14 @@ Blockstack_sso.phpSignIn(hash, name, key).then((res) => {
 ```PHP
 include( plugin_dir_path( __FILE__ ) . "../libs/blockstack sso.php");
 $blkstk = new Blockstack_sso();
+```
 
 ### php create authentication request
+```PHP
 $blkstk->createAuthReq();
+```
 
 ### php authenticate
+```PHP
 $blkstk->auth();
 ```
