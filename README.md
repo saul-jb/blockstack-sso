@@ -7,10 +7,10 @@ All server side files need the blockstack sso.php included.
 
 ### Login
 Blockstack_sso.login().then((url) => {<br />
-	// redirect to blockstack service<br />
-	window.location.replace(url);<br />
+   // redirect to blockstack service<br />
+    window.location.replace(url);<br />
 }).catch((err) => {<br />
-	// failed to make request<br />
+    // failed to make request<br />
 });
 
 ### logout
@@ -18,9 +18,9 @@ Blockstack_sso.logout("redirect url");
 
 ### is signed in
 Blockstack_sso.isSignedIn().then((userData) => {<br />
-	// successful blockstack sign in<br />
+    // successful blockstack sign in<br />
 }).catch((err) => {<br />
-	// sign in failed.<br />
+    // sign in failed.<br />
 });
 
 ### request php sign in
@@ -30,9 +30,9 @@ var name = userData.profile.name;<br />
 var key = userData.appPrivateKey;<br />
 <br />
 Blockstack_sso.phpSignIn(hash, name, key).then((res) => {<br />
-	// seccessful sign-in<br />
+    // seccessful sign-in<br />
 }).catch((err) => {<br />
-	// failed for some reason or another<br />
+    // failed for some reason or another<br />
 });<br />
 <br />
 ### php Blockstack_sso init<br />
