@@ -1,40 +1,58 @@
-window.blockstack = require('blockstack');
-window.jsontokens = require('jsontokens');
-window.encryption = require("./node_modules/blockstack/lib/encryption.js");
-window.authApp = require("./node_modules/blockstack/lib/auth/authApp.js");
-
+blockstack = require('blockstack');
+jsontokens = require('jsontokens');
+encryption = require("./node_modules/blockstack/lib/encryption.js");
+authApp = require("./node_modules/blockstack/lib/auth/authApp.js");
 
 var Blockstack_sso = (() => {
-	var login, logout, isSignedIn, decryptHash, phpSignIn, getUrlParameter, postData;
+	var login, logout, isSignedIn, decryptHash, phpSignIn, hash, getData;
 
-	login = () => {
-		var req = blockstack.makeAuthRequest();
-		var url = "http:\/\/" + window.location.hostname + "/?authResponse="  + req;
+	login = (serverUrl = false, blockstackServiceUrl = "http://localhost:8888") => {
+		return new Promise((resolve, reject) => {
+			//make sure the user somehow isn't already logged in - fixes the bugs too
+			logout();
+			var req = blockstack.makeAuthRequest();
 
-		window.location.replace(url);
-	};
+			serverUrl = serverUrl ? serverUrl + req : "http:\/\/" + window.location.hostname + "/?bsrequest="  + req;
 
-	logout = () => {
-		blockstack.signUserOut(window.location.href);
-	};
+			getData(serverUrl).then((res) => {
+				var data;
 
-	isSignedIn = (successCallback, failureCallback, timeout = 2000) => {
-		var failureTimout = setTimeout(failureCallback, timeout);
+				try{
+					data = JSON.parse(res);
+				}
+				catch (e){
+					data = {error: true, data: e + " response: " + res}
+				}
 
-		if (blockstack.isUserSignedIn()) {
-			var userData = blockstack.loadUserData();
-
-			clearTimeout(failureTimout);
-			successCallback(userData);
-		}
-		else if (blockstack.isSignInPending()) {
-			blockstack.handlePendingSignIn().then((userData) => {
-				clearTimeout(failureTimout);
-				successCallback(userData);
-			}).catch(err => {
-				failureCallback(err);
+				data.error ? reject(data.data) : resolve(blockstackServiceUrl + "/auth?authRequest=" + data.data);
+			}).catch((err) => {
+				reject(data.data);
 			});
-		}
+		});
+	};
+
+	logout = (redirectUrl = null) => {
+		blockstack.signUserOut(redirectUrl);
+	};
+
+	isSignedIn = () => {
+		return new Promise((resolve, reject) => {
+			if (blockstack.isUserSignedIn()) {
+				var userData = blockstack.loadUserData();
+
+				resolve(userData);
+			}
+			else if (blockstack.isSignInPending()) {
+				blockstack.handlePendingSignIn().then((userData) => {
+					resolve(userData);
+				}).catch(err => {
+					reject(err);
+				});
+			}
+			else{
+				reject("Not signed in");
+			}
+		});
 	};
 
 	decryptHash = (encryptedData) => {
@@ -44,54 +62,57 @@ var Blockstack_sso = (() => {
 		return hash;
 	};
 
-	phpSignIn = (verificationHash, name, callback) => {
-		var id, decodedToken, token, postData;
+	phpSignIn = (verificationHash, name, key, serverUrl = false) => {
+		return new Promise((resolve, reject) => {
+			var id, params;
 
-		token = getUrlParameter("authResponse");
-		decodedToken = jsontokens.decodeToken(token);
-		id = decodedToken.payload.public_keys[0];
+			id = hash(key).toString();
+			params = "verificationHash=" + verificationHash + "&id=" + id + "&name=" + name;
 
-		postData = {
-			token,
-			id,
-			verificationHash,
-			name
+			serverUrl = serverUrl ? serverUrl + params : "http:\/\/" + window.location.hostname + "/?"  + params;
+
+			getData(serverUrl).then((res) => {
+				var data;
+
+				try{
+					data = JSON.parse(res);
+				}
+				catch (e){
+					data = {error: true, data: e + " response: " + res}
+				}
+
+				data.error ? reject(data.data) : resolve(data.data);
+			}).catch((err) => {
+				reject(err);
+			});
+		});
+	};
+
+	hash = (data) => {
+		var hash = 0, i, chr;
+
+		if (data.length === 0){
+			return hash
 		};
 
-		postData(postData, callback);
-	};
-
-	postData = (data, callback) => {
-		var http = new XMLHttpRequest();
-		var url = "get_data.php";
-		var params = "name=" + data.name + "&id=" + data.id + "&hash=" + data.verificationHash + "&token=" + data.token;
-
-		http.open("POST", url, true);
-		http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-		http.onreadystatechange = function() {
-			if(http.readyState == 4 && http.status == 200) {
-				callback(http.responseText);
-			}
+		for (i = 0; i < data.length; i++) {
+			chr   = data.charCodeAt(i);
+			hash  = ((hash << 5) - hash) + chr;
+			hash |= 0; // Convert to 32bit integer
 		}
 
-		http.send(params);
+		return hash;
+	};
+
+	getData = (url) => {
+		return new Promise((resolve, reject) => {
+			const req = new XMLHttpRequest();
+			req.open('GET', url);
+			req.onload = () => req.status === 200 ? resolve(req.response) : reject(Error(req.statusText));
+			req.onerror = (e) => reject(Error(`Network Error: ${e}`));
+			req.send();
+		});
 	}
-
-	getUrlParameter = (sParam) => {
-		var sPageURL, sURLVariables, i, sParameterName;
-
-		sPageURL = decodeURIComponent(window.location.search.substring(1));
-		sURLVariables = sPageURL.split('&');
-
-		for (i = 0; i < sURLVariables.length; i++) {
-			sParameterName = sURLVariables[i].split('=');
-
-			if (sParameterName[0] === sParam) {
-				return sParameterName[1] === undefined ? false : sParameterName[1];
-			}
-		}
-	};
 
 	return {
 		login: login,
@@ -102,4 +123,4 @@ var Blockstack_sso = (() => {
 	};
 })();
 
-exports.Blockstack_sso = Blockstack_sso
+module.exports = Blockstack_sso;

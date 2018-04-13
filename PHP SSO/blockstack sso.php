@@ -47,13 +47,9 @@ class Blockstack_sso {
 
 	public function auth(){
 		$name = $_GET["name"];
-		echo $name;
 		$id = $_GET["id"];
-		echo $id;
 		$hash = $_GET["verificationHash"];
-		echo $hash;
 		$token = $_SESSION["oldReq"];
-		echo $token;
 
 		if(!isset($token) || !isset($id) || !isset($hash) || !isset($token)){
 			return $this->respond(true, "invalid post parameters");

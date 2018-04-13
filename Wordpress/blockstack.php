@@ -13,6 +13,12 @@
 * @author Saul Boyd
 */
 
+register_activation_hook( __FILE__, 'activated' );
+
+function activated(){
+	flush_rewrite_rules();
+}
+
 add_action("plugins_loaded", "init");
 
 function init(){
@@ -23,9 +29,9 @@ function init(){
 
 	// hooks for redirecting the login to our custom login
 	add_action("init","goto_login_page");
-	add_action("wp_login_failed", "login_failed");
-	add_filter("authenticate", "blank_username_password", 1, 3);
-	add_action("wp_logout", "logout_page");
+	add_action("wp_login_failed", "goto_login_page");
+	add_filter("authenticate", "goto_login_page", 1, 3);
+	add_action("wp_logout", "goto_login_page");
 }
 
 //____________________________________________________________________________________________________________
@@ -33,8 +39,7 @@ function init(){
 function rewriteRules($wp_rewrite){
 	$feed_rules = array(
 		"blockstack-login/?$" => "index.php?bslogin=1",
-		"manifest.json/?$" => "index.php?manifest=1",
-		"blockstack-auth/?$" => "index.php?bsauth=1"
+		"manifest.json/?$" => "index.php?manifest=1"
 	);
 	$wp_rewrite->rules = $feed_rules + $wp_rewrite->rules;
 
@@ -46,7 +51,7 @@ function queryVars($query_vars){
 	$query_vars[] = "bslogin";
 	$query_vars[] = "manifest";
 	$query_vars[] = "authResponse";
-	$query_vars[] = "bsauth";
+	$query_vars[] = "verificationHash";
 	$query_vars[] = "bsrequest";
 
 	return $query_vars;
@@ -68,18 +73,13 @@ function templateRedirect(){
 
 	$authResponse = get_query_var("authResponse");
 	if($authResponse){
-		include plugin_dir_path( __FILE__ ) . "pages/beforeAuth.php";
+		include plugin_dir_path( __FILE__ ) . "pages/authPage.php";
 		die;
 	}
 
 	$bsrequest = get_query_var("bsrequest");
-	if($bsrequest){
-		include plugin_dir_path( __FILE__ ) . "pages/request.php";
-		die;
-	}
-
-	$bsauth = intval(get_query_var("bsauth"));
-	if($bsauth){
+	$verificationHash = get_query_var("verificationHash");
+	if($bsrequest || $verificationHash){
 		include plugin_dir_path( __FILE__ ) . "pages/auth.php";
 		die;
 	}
@@ -94,35 +94,5 @@ function goto_login_page() {
 		wp_redirect($login_page);
 		exit;
 	}
-}
-
-
-function login_failed() {
-	$login_page = home_url( "/index.php?bslogin=1" );
-	wp_redirect( $login_page . "&login=failed");
-	exit;
-}
-
-function blank_username_password( $user, $username, $password ) {
-	$login_page = home_url( "/index.php?bslogin=1" );
-	if( $username == "" || $password == "" ) {
-		wp_redirect( $login_page . "&login=blank" );
-		exit;
-	}
-}
-
-function logout_page() {
-	wp_redirect( $login_page . "&login=false" );
-	exit;
-}
-
-//____________________________________________________________________________________________________________________________
-$page_showing = basename($_SERVER["REQUEST_URI"]);
-
-if (strpos($page_showing, "failed") !== false) {
-	echo "<p class='error-msg'><strong>ERROR:</strong> Invalid username and/or password.</p>";
-}
-elseif (strpos($page_showing, "blank") !== false ) {
-	echo "<p class='error-msg'><strong>ERROR:</strong> Username and/or Password is empty.</p>";
 }
 ?>

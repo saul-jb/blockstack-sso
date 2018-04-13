@@ -1,82 +1,91 @@
-window.blockstack = require('blockstack');
-window.jsontokens = require('jsontokens');
-window.encryption = require("./node_modules/blockstack/lib/encryption.js");
-window.authApp = require("./node_modules/blockstack/lib/auth/authApp.js");
+blockstack = require('blockstack');
+jsontokens = require('jsontokens');
+encryption = require("./node_modules/blockstack/lib/encryption.js");
+authApp = require("./node_modules/blockstack/lib/auth/authApp.js");
 
+var Blockstack_sso = (() => {
+	var login, logout, isSignedIn, decryptHash, phpSignIn, hash, getData;
 
-window.Blockstack_sso = ((redirectUrl = false) => {
-	var login, logout, isSignedIn, decryptHash, phpSignIn, getUrlParameter, hash;
+	login = (serverUrl = false, blockstackServiceUrl = "http://localhost:8888") => {
+		return new Promise((resolve, reject) => {
+			//make sure the user somehow isn't already logged in - fixes the bugs too
+			logout();
+			var req = blockstack.makeAuthRequest();
 
-	login = () => {
-		//make sure the user somehow isn't already logged in - fixes the bugs too
-		logout();
-		var req = blockstack.makeAuthRequest();
+			serverUrl = serverUrl ? serverUrl + req : "http:\/\/" + window.location.hostname + "/?bsrequest="  + req;
 
-		if(!redirectUrl){
-			redirectUrl = "http:\/\/" + window.location.hostname + "/?bsrequest="  + req;
-		}
-		else{
-			redirectUrl = redirectUrl + req;
-		}
+			getData(serverUrl).then((res) => {
+				var data;
 
-		window.location.replace(redirectUrl);
-	};
+				try{
+					data = JSON.parse(res);
+				}
+				catch (e){
+					data = {error: true, data: e + " response: " + res}
+				}
 
-	logout = () => {
-		blockstack.signUserOut(window.location.href);
-	};
-
-	isSignedIn = (successCallback, failureCallback, timeout = 2000) => {
-		var failureTimout = setTimeout(failureCallback, timeout);
-
-		if (blockstack.isUserSignedIn()) {
-			var userData = blockstack.loadUserData();
-
-			clearTimeout(failureTimout);
-			successCallback(userData);
-		}
-		else if (blockstack.isSignInPending()) {
-			clearTimeout(failureTimout);
-			blockstack.handlePendingSignIn().then((userData) => {
-				successCallback(userData);
-			}).catch(err => {
-				failureCallback(err);
+				data.error ? reject(data.data) : resolve(blockstackServiceUrl + "/auth?authRequest=" + data.data);
+			}).catch((err) => {
+				reject(data.data);
 			});
-		}
+		});
+	};
+
+	logout = (redirectUrl = null) => {
+		blockstack.signUserOut(redirectUrl);
+	};
+
+	isSignedIn = () => {
+		return new Promise((resolve, reject) => {
+			if (blockstack.isUserSignedIn()) {
+				var userData = blockstack.loadUserData();
+
+				resolve(userData);
+			}
+			else if (blockstack.isSignInPending()) {
+				blockstack.handlePendingSignIn().then((userData) => {
+					resolve(userData);
+				}).catch(err => {
+					reject(err);
+				});
+			}
+			else{
+				reject("Not signed in");
+			}
+		});
 	};
 
 	decryptHash = (encryptedData) => {
-		console.log("encryptedData", encryptedData)
 		var transitKey = authApp.getTransitKey();
 		var hash = encryption.decryptECIES(transitKey, encryptedData);
 
 		return hash;
 	};
 
-	phpSignIn = (verificationHash, name, key, authUrl) => {
-		var id, data, redirectUrl;
+	phpSignIn = (verificationHash, name, key, serverUrl = false) => {
+		return new Promise((resolve, reject) => {
+			var id, params;
 
-		id = hash(key).toString();
-		console.log("ID", id);
+			id = hash(key).toString();
+			params = "verificationHash=" + verificationHash + "&id=" + id + "&name=" + name;
 
-		redirectUrl = authUrl + "?name=" + name + "&id=" + id + "&verificationHash=" + verificationHash;
+			serverUrl = serverUrl ? serverUrl + params : "http:\/\/" + window.location.hostname + "/?"  + params;
 
-		window.location.replace(redirectUrl);
-	};
+			getData(serverUrl).then((res) => {
+				var data;
 
-	getUrlParameter = (sParam) => {
-		var sPageURL, sURLVariables, i, sParameterName;
+				try{
+					data = JSON.parse(res);
+				}
+				catch (e){
+					data = {error: true, data: e + " response: " + res}
+				}
 
-		sPageURL = decodeURIComponent(window.location.search.substring(1));
-		sURLVariables = sPageURL.split('&');
-
-		for (i = 0; i < sURLVariables.length; i++) {
-			sParameterName = sURLVariables[i].split('=');
-
-			if (sParameterName[0] === sParam) {
-				return sParameterName[1] === undefined ? false : sParameterName[1];
-			}
-		}
+				data.error ? reject(data.data) : resolve(data.data);
+			}).catch((err) => {
+				reject(err);
+			});
+		});
 	};
 
 	hash = (data) => {
@@ -95,6 +104,16 @@ window.Blockstack_sso = ((redirectUrl = false) => {
 		return hash;
 	};
 
+	getData = (url) => {
+		return new Promise((resolve, reject) => {
+			const req = new XMLHttpRequest();
+			req.open('GET', url);
+			req.onload = () => req.status === 200 ? resolve(req.response) : reject(Error(req.statusText));
+			req.onerror = (e) => reject(Error(`Network Error: ${e}`));
+			req.send();
+		});
+	}
+
 	return {
 		login: login,
 		logout: logout,
@@ -103,3 +122,5 @@ window.Blockstack_sso = ((redirectUrl = false) => {
 		phpSignIn: phpSignIn
 	};
 })();
+
+module.exports = Blockstack_sso;
