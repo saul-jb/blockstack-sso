@@ -12,61 +12,32 @@ class Blockstack_sso {
 		session_start();
 	}
 
-	public function createAuthReq(){
-		// this function is to be called on the page that the login redirects to for authentication
-
-		$bsrequest = $_GET["bsrequest"];
-
-		if(!isset($bsrequest)){
-			return $this->respond(true, "bsrequest is not set");
-		}
-
-		$hashedToken = hash_hmac("sha256", $bsrequest, $this->secret);
-		$url = "http://" . $_SERVER['SERVER_NAME'] . ":5000/?token=" . $bsrequest . '&hashedToken=' . $hashedToken;
-		$context = stream_context_create(array('http' => array('header'=>'Connection: close\r\n')));
-		$file = file_get_contents($url, false, $context);
-		$fileJSON = json_decode($file, true);
-
-		if(json_last_error() != JSON_ERROR_NONE){
-			return $this->respond(true, "invalid json response from node server");
-		}
-
-		if(!isset($fileJSON["verified"]) || !isset($fileJSON["encrypted"])){
-			return $this->respond(true, "invalid response from node server");
-		}
-
-		if(!$fileJSON["verified"]){
-			return $this->respond(true, "invalid jwt signiture");
-		}
-
-		$_SESSION["encryptedToken"] = json_encode($fileJSON["encrypted"]);
-		$_SESSION["oldReq"] = $bsrequest;
-
-		return $this->respond(false, $bsrequest);
-	}
-
 	public function auth(){
+		// this function is to be called to verify and obtain the blockstack data
+
 		$name = $_GET["name"];
-		$id = $_GET["id"];
-		$hash = $_GET["verificationHash"];
-		$token = $_SESSION["oldReq"];
+		$key = $_GET["key"];
 
-		if(!isset($token) || !isset($id) || !isset($hash) || !isset($token)){
-			return $this->respond(true, "invalid post parameters");
+		if(!isset($key) || !isset($name)){
+			return $this->respond(true, "invalid get parameters");
 		}
 
-		$password =  hash_hmac("sha256", $name . $id, $this->secret);
-		$hashedToken = hash_hmac("sha256", $token, $this->secret);
-
-		if($hash != $hashedToken){
-			return $this->respond(true, "hash doesn't match token");
+		if(strlen($name) >= 30){
+			return $this->respond(true, "name too long");
 		}
+
+		if(strlen($key) != 64){
+			return $this->respond(true, "invalid key");
+		}
+
+		$password =  hash_hmac("sha256", $key, $key);
+		$id =  substr(hash_hmac("sha256", $key, $this->secret), 0, 29);
 
 		$profile = 	array(
-				"name" => $name,
-				"id" => $id,
-				"password" => $password
-			);
+			"name" => $name,
+			"id" => $id,
+			"password" => $password
+		);
 
 		return $this->respond(false, $profile);
 	}

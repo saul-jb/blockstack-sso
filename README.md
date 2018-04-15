@@ -32,11 +32,10 @@ Blockstack_sso.isSignedIn().then((userData) => {
 ### request php sign in
 ```JS
 var data = <?php echo $_SESSION["encryptedToken"]; ?>;
-var hash = Blockstack_sso.decryptHash(data);
 var name = userData.profile.name;
 var key = userData.appPrivateKey;
 
-Blockstack_sso.phpSignIn(hash, name, key).then((res) => {
+Blockstack_sso.phpSignIn(name, key).then((res) => {
 	// seccessful sign-in
 }).catch((err) => {
 	// failed for some reason or another
@@ -47,11 +46,6 @@ Blockstack_sso.phpSignIn(hash, name, key).then((res) => {
 ```PHP
 include( plugin_dir_path( __FILE__ ) . "../libs/blockstack sso.php");
 $blkstk = new Blockstack_sso();
-```
-
-### php create authentication request
-```PHP
-$blkstk->createAuthReq();
 ```
 
 ### php authenticate
