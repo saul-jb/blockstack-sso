@@ -73,7 +73,7 @@ wp_login_form( $args );
 			Blockstack_sso.login().then((url) => {
 				window.location.replace(url);
 			}).catch((err) => {
-				console.error(err);
+				console.error("Error: " + err);
 			});
 		});
 	});
