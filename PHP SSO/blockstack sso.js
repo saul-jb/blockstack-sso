@@ -4,7 +4,7 @@ jsontokens = require('jsontokens');
 var Blockstack_sso = (() => {
 	var login, logout, isSignedIn, phpSignIn, getData;
 
-	login = (serverUrl = false, blockstackServiceUrl = "http://localhost:8888") => {
+	login = (serverUrl = false, blockstackServiceUrl = "http://browser.blockstack.org") => {
 		return new Promise((resolve, reject) => {
 			//make sure the user somehow isn't already logged in - fixes the bugs too
 			logout();

@@ -50,7 +50,7 @@ else{
 	$creds = array(
 		'user_login' => $userName,
 		'user_password' => $response["data"]["password"],
-		'remember' => true
+		'remember' => false
 	);
 
 	$user = wp_signon( $creds, false );
