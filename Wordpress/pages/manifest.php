@@ -1,6 +1,8 @@
 <?php
 /*
-* Template Name: Manifest Page
+	Template Name: Manifest Page
+	Author: Saul Boyd (avikar.io)
+	License: GPL (http://www.gnu.org/copyleft/gpl.html)
 */
 ?>
 

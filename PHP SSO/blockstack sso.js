@@ -1,3 +1,9 @@
+/*
+	This module intergrates blockstack with php.
+	Author: Saul Boyd (avikar.io)
+	License: GPL (http://www.gnu.org/copyleft/gpl.html)
+*/
+
 blockstack = require('blockstack');
 jsontokens = require('jsontokens');
 

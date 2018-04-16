@@ -7,6 +7,7 @@
 * Author: Saul Boyd
 * Author URI: http://avikar.io
 * Text Domain: blockstack
+* License: GPL (http://www.gnu.org/copyleft/gpl.html)
 *
 * @package blockstack
 * @category Core

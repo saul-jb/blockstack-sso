@@ -1,6 +1,8 @@
 <?php
 /*
-* Template Name: Authentication page
+	Template Name: Authentication page
+	Author: Saul Boyd (avikar.io)
+	License: GPL (http://www.gnu.org/copyleft/gpl.html)
 */
 ?>
 
