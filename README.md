@@ -31,11 +31,7 @@ Blockstack_sso.isSignedIn().then((userData) => {
 
 ### request php sign in
 ```JS
-var data = <?php echo $_SESSION["encryptedToken"]; ?>;
-var name = userData.profile.name;
-var key = userData.appPrivateKey;
-
-Blockstack_sso.phpSignIn(name, key).then((res) => {
+Blockstack_sso.phpSignIn(userData).then((res) => {
 	// seccessful sign-in
 }).catch((err) => {
 	// failed for some reason or another
