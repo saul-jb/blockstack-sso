@@ -25,14 +25,13 @@ class Blockstack_sso {
 			return $this->respond(true, "invalid json");
 		}
 
-		if(!isset($userData["appPrivateKey"]) || strlen($userData["appPrivateKey"]) != 64){
+		if(!isset($userData["appPrivateKey"]) || strlen($userData["appPrivateKey"]) < 32){
 			return $this->respond(true, "invalid key");
 		}
 
 		if(!isset($userData["did"])){
 			return $this->respond(true, "missing did");
 		}
-		//https://gaia.blockstack.org/hub/19GiHARBHnn7iQZyBm5SDhiFfFcQDBgXMY/profile.json
 
 		if(!isset($userData["profile"]["name"])){
 			// check to see if we have failed to get the name and try for the hosted profile data

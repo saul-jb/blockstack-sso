@@ -3,7 +3,7 @@
 * Plugin Name: Blockstack - Authentication Via Blockstack
 * Plugin URI:
 * Description: Blockstack modifies the login page to allow signing in by blockstack.
-* Version: 0.9
+* Version: 1.0
 * Author: Saul Boyd
 * Author URI: http://avikar.io
 * Text Domain: blockstack
@@ -13,98 +13,103 @@
 * @author Saul Boyd
 */
 
-register_activation_hook( __FILE__, 'activated' );
+register_activation_hook(__FILE__, array("blockstack", "activated"));
 
-function activated(){
-	flush_rewrite_rules();
-}
+add_action("plugins_loaded", array("blockstack", "init"));
 
-add_action("plugins_loaded", "init");
+class blockstack{
+	public static function init(){
+		// hooks for directing the blockstack-login url
+		add_filter("generate_rewrite_rules", array(get_called_class(), "rewriteRules"));
+		add_filter("query_vars", array(get_called_class(), "queryVars"));
+		add_action("template_redirect", array(get_called_class(), "templateRedirect"));
 
-function init(){
-	// hooks for directing the blockstack-login url
-	add_filter("generate_rewrite_rules", "rewriteRules");
-	add_filter("query_vars", "queryVars");
-	add_action("template_redirect", "templateRedirect");
+		// hooks for login
+		add_action("init",array(get_called_class(), "preventPassowrdChange"));
+		add_action("login_footer", array(get_called_class(), "loginForm"));
+	}
 
-	// hooks for login
-	add_action("init","preventPassowrdChange");
-	add_action("login_footer", "loginForm");
-}
 
-//____________________________________________________________________________________________________________
+	public static function loginForm(){
+		?>
+		<script src="<?php echo plugin_dir_url( __FILE__ ) . '/js/blockstack sso.js'; ?>"></script>
+		<script>
+			document.addEventListener("DOMContentLoaded", function(event) {
+				var form = document.getElementById("loginform");
+				var btn = document.createElement("INPUT");
+				btn.type = "button";
+				btn.value = "Sign in with blockstack.";
+				btn.className = "button button-primary button-large";
+				btn.style = "position: relative; top: 20px; width: 100%";
 
-function loginForm(){
-	?>
-	<script src="<?php echo plugin_dir_url( __FILE__ ) . '/js/blockstack sso.js'; ?>"></script>
-	<script>
-		document.addEventListener("DOMContentLoaded", function(event) {
-			var form = document.getElementById("loginform");
-			var btn = document.createElement("INPUT");
-			btn.type = "button";
-			btn.value = "Sign in with blockstack.";
-			btn.className = "button button-primary button-large";
-			btn.style = "position: relative; top: 20px; width: 100%";
-
-			btn.addEventListener("click", function(event) {
-				event.preventDefault();
-				Blockstack_sso.login().then((url) => {
-					window.location.replace(url);
-				}).catch((err) => {
-					console.error("Error: " + err);
+				btn.addEventListener("click", function(event) {
+					event.preventDefault();
+					Blockstack_sso.login().then((url) => {
+						window.location.replace(url);
+					}).catch((err) => {
+						console.error("Error: " + err);
+					});
 				});
+
+				form.appendChild(btn);
 			});
+		</script>
+		<?php
+	}
 
-			form.appendChild(btn);
-		});
-	</script>
-	<?php
-}
+	public static function preventPassowrdChange(){
+		$user = wp_get_current_user();
 
-function preventPassowrdChange(){
-	$user = wp_get_current_user();
+		if($user->exists() && get_user_meta($user->ID, "blockstack_user", true)){
+			add_filter('show_password_fields', function(){
+				return false;
+			});
+			add_filter("allow_password_reset", function(){
+				return false;
+			});
+		}
+	}
 
-	if($user->exists() && get_user_meta($user->ID, "blockstack_user", true)){
-		add_filter('show_password_fields', create_function("$nopass_profile", "return false;"));
-		add_filter("allow_password_reset", create_function("$nopass_login", "return false;"));
+	public function rewriteRules($wp_rewrite){
+		$feed_rules = array("manifest.json/?$" => "index.php?manifest=1");
+		$wp_rewrite->rules = $feed_rules + $wp_rewrite->rules;
+
+		return $wp_rewrite->rules;
+	}
+
+
+	public static function queryVars($query_vars){
+		$query_vars[] = "manifest";
+		$query_vars[] = "authResponse";
+
+		return $query_vars;
+	}
+
+
+	public static function templateRedirect(){
+		$manifest = intval( get_query_var("manifest"));
+		if($manifest){
+			include plugin_dir_path( __FILE__ ) . "pages/manifest.php";
+			die;
+		}
+
+		$authResponse = get_query_var("authResponse");
+		if($authResponse){
+			include plugin_dir_path( __FILE__ ) . "pages/authPage.php";
+			die;
+		}
+	}
+
+	public function activated(){
+		flush_rewrite_rules();
 	}
 }
-
-function rewriteRules($wp_rewrite){
-	$feed_rules = array("manifest.json/?$" => "index.php?manifest=1");
-	$wp_rewrite->rules = $feed_rules + $wp_rewrite->rules;
-
-	return $wp_rewrite->rules;
-};
-
-
-function queryVars($query_vars){
-	$query_vars[] = "manifest";
-	$query_vars[] = "authResponse";
-
-	return $query_vars;
-};
-
-
-function templateRedirect(){
-	$manifest = intval( get_query_var("manifest"));
-	if($manifest){
-		include plugin_dir_path( __FILE__ ) . "pages/manifest.php";
-		die;
-	}
-
-	$authResponse = get_query_var("authResponse");
-	if($authResponse){
-		include plugin_dir_path( __FILE__ ) . "pages/authPage.php";
-		die;
-	}
-};
 
 //__________________________________________________________________________________________________________________________
 
 if( ! function_exists("get_avatar") ) {
-	function get_avatar($id, $size = 96, $default = '', $alt = '', $args = null){
-		$bsUrl = get_user_meta($id, "avatar_url", true);
+	function get_avatar($id_or_email, $size = 96, $default = '', $alt = '', $args = null){
+		$bsUrl = get_user_meta($id_or_email, "avatar_url", true);
 
 
 		$defaults = array(

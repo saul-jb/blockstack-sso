@@ -34,7 +34,7 @@ Blockstack_sso.isSignedIn().then((userData) => {
 Blockstack_sso.phpSignIn(userData).then((res) => {
 	// seccessful sign-in
 }).catch((err) => {
-	// failed for some reason or another
+	// failed for because of err
 });
 ```
 
