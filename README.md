@@ -50,7 +50,7 @@ $blkstk->auth();
 ```
 
 ## Build
-To build the blockstack sso.min.js run:
+To build the "blockstack sso.min.js" file, run:
 ```BASH
 npm i;
 npm run all;
