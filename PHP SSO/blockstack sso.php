@@ -25,8 +25,24 @@ class Blockstack_sso {
 			return $this->respond(true, "invalid json");
 		}
 
-		if(strlen($userData["appPrivateKey"]) != 64){
+		if(!isset($userData["appPrivateKey"]) || strlen($userData["appPrivateKey"]) != 64){
 			return $this->respond(true, "invalid key");
+		}
+
+		if(!isset($userData["did"])){
+			return $this->respond(true, "missing did");
+		}
+		//https://gaia.blockstack.org/hub/19GiHARBHnn7iQZyBm5SDhiFfFcQDBgXMY/profile.json
+
+		if(!isset($userData["profile"]["name"])){
+			// check to see if we have failed to get the name and try for the hosted profile data
+			// this is to fix a bug in the browser version not returning any profile data
+
+			$profileData = $this->getProfileFromDid($userData["did"]);
+
+			if($profileData){
+				$userData["profile"] = $profileData;
+			}
 		}
 
 		if(!isset($userData["profile"]["image"][0]["contentUrl"])){
@@ -34,6 +50,14 @@ class Blockstack_sso {
 		}
 		else{
 			$userData["avatarUrl"] = $userData["profile"]["image"][0]["contentUrl"];
+		}
+
+		if(!isset($userData["profile"]["name"])){
+			$userData["profile"]["name"] = "Anonymous";
+		}
+
+		if(!isset($userData["profile"]["description"])){
+			$userData["profile"]["description"] = "";
 		}
 
 		$userData["password"] =  hash_hmac("sha256", $userData["appPrivateKey"], $userData["appPrivateKey"]);
@@ -66,6 +90,26 @@ class Blockstack_sso {
 		}
 
 		return $authParts;
+	}
+
+	private function getProfileFromDid($did){
+		$profileDataPage = file_get_contents("https://gaia.blockstack.org/hub/" . $did . "/profile.json");
+
+		if(!isset($profileDataPage)){
+			return false;
+		}
+
+		$profileData = json_decode($profileDataPage, TRUE);
+
+		if(json_last_error() != JSON_ERROR_NONE){
+			return false;
+		}
+
+		if(!isset($profileData[0]["decodedToken"]["payload"]["claim"])){
+			return false;
+		}
+
+		return $profileData[0]["decodedToken"]["payload"]["claim"];
 	}
 }
 ?>

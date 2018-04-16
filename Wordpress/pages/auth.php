@@ -50,9 +50,9 @@ else{
 	$creds = array(
 		'user_login' => $userName,
 		'user_password' => $response["data"]["password"],
-		'remember' => false
+		'remember' => true
 	);
 
-	$user = wp_signon( $creds, false );
+	$user = wp_signon( $creds, is_ssl() );
 }
 ?>
