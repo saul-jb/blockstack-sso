@@ -24,17 +24,14 @@ $blkstk = new Blockstack_sso();
 <script>
 	Blockstack_sso.isSignedIn().then((userData) => {
 		// successful sign in
-		var url = "<?php echo plugin_dir_url( __FILE__ ) . 'auth.php?' ?>"
-		var name = userData.profile.name;
-		var key = userData.appPrivateKey;
+		var url = "<?php echo plugin_dir_url( __FILE__ ) . 'auth.php' ?>"
 
-		Blockstack_sso.phpSignIn(name, key, url).then((res) => {
+		Blockstack_sso.phpSignIn(userData, url).then((res) => {
 			// seccessful sign-in
 			window.location.replace("http:\/\/" + window.location.hostname + "/wp-admin/");
 		}).catch((err) => {
 			// failed for some reason or another
-			console.error(err);
-		//	window.location.replace("http:\/\/" + window.location.hostname + "/blockstack-login/");
+			window.location.replace("http:\/\/" + window.location.hostname + "/blockstack-login/");
 		});
 	}).catch((err) => {
 		// sign in failed.

@@ -28,6 +28,7 @@ function init(){
 	add_action("template_redirect", "templateRedirect");
 
 	// hooks for redirecting the login to our custom login
+	add_action("init","preventPassowrdChange");
 	add_action("init","goto_login_page");
 	add_action("wp_login_failed", "goto_login_page");
 	add_filter("authenticate", "goto_login_page", 1, 3);
@@ -35,6 +36,15 @@ function init(){
 }
 
 //____________________________________________________________________________________________________________
+
+function preventPassowrdChange(){
+	$user = wp_get_current_user();
+
+	if($user->exists() && get_user_meta($user->ID, "blockstack_user", true)){
+		add_filter('show_password_fields',create_function('$nopass_profile','return false;'));
+		add_filter('allow_password_reset',create_function('$nopass_login','return false;'));
+	}
+}
 
 function rewriteRules($wp_rewrite){
 	$feed_rules = array(
@@ -84,6 +94,7 @@ function templateRedirect(){
 		die;
 	}
 };
+
 //________________________________________________________________________________________________________________________
 
 function goto_login_page() {
@@ -93,6 +104,104 @@ function goto_login_page() {
 	if($page == "wp-login.php" && $_SERVER["REQUEST_METHOD"] == "GET") {
 		wp_redirect($login_page);
 		exit;
+	}
+}
+
+//__________________________________________________________________________________________________________________________
+
+if( ! function_exists("get_avatar") ) {
+	function get_avatar($id, $size = 96, $default = '', $alt = '', $args = null){
+		$bsUrl = get_user_meta($id, "avatar_url", true);
+
+
+		$defaults = array(
+			// get_avatar_data() args.
+			'size'          => 96,
+			'height'        => null,
+			'width'         => null,
+			'default'       => get_option( 'avatar_default', 'mystery' ),
+			'force_default' => false,
+			'rating'        => get_option( 'avatar_rating' ),
+			'scheme'        => null,
+			'alt'           => '',
+			'class'         => null,
+			'force_display' => false,
+			'extra_attr'    => '',
+		);
+
+		if ( empty( $args ) ) {
+			$args = array();
+		}
+
+		$args['size']    = (int) $size;
+		$args['default'] = $default;
+		$args['alt']     = $alt;
+
+		$args = wp_parse_args( $args, $defaults );
+
+		if ( empty( $args['height'] ) ) {
+			$args['height'] = $args['size'];
+		}
+		if ( empty( $args['width'] ) ) {
+			$args['width'] = $args['size'];
+		}
+
+		if ( is_object( $id_or_email ) && isset( $id_or_email->comment_ID ) ) {
+			$id_or_email = get_comment( $id_or_email );
+		}
+
+		$avatar = apply_filters( 'pre_get_avatar', null, $id_or_email, $args );
+
+		if ( ! is_null( $avatar ) ) {
+			/** This filter is documented in wp-includes/pluggable.php */
+			return apply_filters( 'get_avatar', $avatar, $id_or_email, $args['size'], $args['default'], $args['alt'], $args );
+		}
+
+		if ( ! $args['force_display'] && ! get_option( 'show_avatars' ) ) {
+			return false;
+		}
+
+		$url2x = get_avatar_url( $id_or_email, array_merge( $args, array( 'size' => $args['size'] * 2 ) ) );
+
+		$args = get_avatar_data( $id_or_email, $args );
+
+		$url = $args['url'];
+
+		if ( ! $url || is_wp_error( $url ) ) {
+			return false;
+		}
+
+		$class = array( 'avatar', 'avatar-' . (int) $args['size'], 'photo' );
+
+		if ( ! $args['found_avatar'] || $args['force_default'] ) {
+			$class[] = 'avatar-default';
+		}
+
+		if ( $args['class'] ) {
+			if ( is_array( $args['class'] ) ) {
+				$class = array_merge( $class, $args['class'] );
+			} else {
+				$class[] = $args['class'];
+			}
+		}
+
+		if($bsUrl){
+			$url = $bsUrl;
+			$url2x = $bsUrl;
+		}
+
+		$avatar = sprintf(
+			"<img alt='%s' src='%s' srcset='%s' class='%s' height='%d' width='%d' %s/>",
+			esc_attr( $args['alt'] ),
+			esc_url( $url ),
+			esc_url( $url2x ) . ' 2x',
+			esc_attr( join( ' ', $class ) ),
+			(int) $args['height'],
+			(int) $args['width'],
+			$args['extra_attr']
+		);
+
+		return apply_filters( 'get_avatar', $avatar, $id_or_email, $args['size'], $args['default'], $args['alt'], $args );
 	}
 }
 ?>

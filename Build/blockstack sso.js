@@ -1,7 +1,5 @@
 blockstack = require('blockstack');
 jsontokens = require('jsontokens');
-encryption = require("./node_modules/blockstack/lib/encryption.js");
-authApp = require("./node_modules/blockstack/lib/auth/authApp.js");
 
 var Blockstack_sso = (() => {
 	var login, logout, isSignedIn, phpSignIn, getData;
@@ -17,7 +15,7 @@ var Blockstack_sso = (() => {
 				reject("failed to make auth request");
 			}
 
-			resolve(blockstackServiceUrl + "/auth?authRequest=" + req);
+			resolve(`${blockstackServiceUrl}/auth?authRequest=${req}`);
 		});
 	};
 
@@ -45,22 +43,26 @@ var Blockstack_sso = (() => {
 		});
 	};
 
-	phpSignIn = (name, key, serverUrl = false) => {
+	phpSignIn = (userObj, serverUrl) => {
 		return new Promise((resolve, reject) => {
-			var params;
+			var param = location.search.split('authResponse=')[1] ? location.search.split('authResponse=')[1] : false;
+			var token = jsontokens.decodeToken(param);
+			var iss = token.payload.iss;
 
-			params = "key=" + key + "&name=" + name;
+			if(!iss){
+				reject("missing iss/did")
+			}
 
-			serverUrl = serverUrl ? serverUrl + params : "http:\/\/" + window.location.hostname + "/?"  + params;
+			userObj.did = (iss.charAt(4) === "b") ? iss.replace("did:btc-addr:", "") : iss.replace("did:ecdsa-pub:", "");
 
-			getData(serverUrl).then((res) => {
+			getData(serverUrl, userObj, "POST").then((res) => {
 				var data;
 
 				try{
 					data = JSON.parse(res);
 				}
 				catch (e){
-					data = {error: true, data: e + " response: " + res}
+					data = {error: true, data: `${e} response: ${res}`}
 				}
 
 				data.error ? reject(data.data) : resolve(data.data);
@@ -70,13 +72,19 @@ var Blockstack_sso = (() => {
 		});
 	};
 
-	getData = (url) => {
+	getData = (url, data, method = "GET") => {
 		return new Promise((resolve, reject) => {
 			const req = new XMLHttpRequest();
-			req.open('GET', url);
-			req.onload = () => req.status === 200 ? resolve(req.response) : reject(Error(req.statusText));
+			req.open(method, url, true);
+			req.setRequestHeader("Content-type", "application/json");
+			//req.onload = () => req.status === 200 ? resolve(req.response) : reject(Error(req.statusText));
+			req.onreadystatechange = (() => {
+				if(req.status === 200 && req.readyState === 4){
+					resolve(req.responseText);
+				}
+			});
 			req.onerror = (e) => reject(Error(`Network Error: ${e}`));
-			req.send();
+    		req.send(JSON.stringify(data));
 		});
 	}
 

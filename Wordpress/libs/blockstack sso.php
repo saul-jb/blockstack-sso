@@ -15,31 +15,32 @@ class Blockstack_sso {
 	public function auth(){
 		// this function is to be called to verify and obtain the blockstack data
 
-		$name = $_GET["name"];
-		$key = $_GET["key"];
+		$user = file_get_contents('php://input');
 
-		if(!isset($key) || !isset($name)){
-			return $this->respond(true, "invalid get parameters");
+		if(!isset($user) || $user === ""){
+			return $this->respond(true, "invalid post parameters");
 		}
 
-		if(strlen($name) >= 30){
-			return $this->respond(true, "name too long");
+		$userData = json_decode(stripslashes($user), true);
+
+		if(json_last_error() != JSON_ERROR_NONE){
+			return $this->respond(true, "invalid json");
 		}
 
-		if(strlen($key) != 64){
+		if(strlen($userData["appPrivateKey"]) != 64){
 			return $this->respond(true, "invalid key");
 		}
 
-		$password =  hash_hmac("sha256", $key, $key);
-		$id =  substr(hash_hmac("sha256", $key, $this->secret), 0, 29);
+		if(!isset($userData["profile"]["image"][0]["contentUrl"])){
+			$userData["avatarUrl"] = "https://s3.amazonaws.com/onename/avatar-placeholder.png";
+		}
+		else{
+			$userData["avatarUrl"] = $userData["profile"]["image"][0]["contentUrl"];
+		}
 
-		$profile = 	array(
-			"name" => $name,
-			"id" => $id,
-			"password" => $password
-		);
+		$userData["password"] =  hash_hmac("sha256", $userData["appPrivateKey"], $userData["appPrivateKey"]);
 
-		return $this->respond(false, $profile);
+		return $this->respond(false, $userData);
 	}
 
 	private function respond($error, $data){
