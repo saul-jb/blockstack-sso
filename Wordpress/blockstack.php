@@ -1,9 +1,9 @@
 <?php
 /**
-* Plugin Name: Blockstack2 - Authentication Via Blockstack
+* Plugin Name: Blockstack - Authentication Via Blockstack
 * Plugin URI:
-* Description: Blockstack allows the login page to be modified to allow signing in by blockstack.
-* Version: 0.0.1
+* Description: Blockstack modifies the login page to allow signing in by blockstack.
+* Version: 0.9
 * Author: Saul Boyd
 * Author URI: http://avikar.io
 * Text Domain: blockstack
@@ -27,30 +27,51 @@ function init(){
 	add_filter("query_vars", "queryVars");
 	add_action("template_redirect", "templateRedirect");
 
-	// hooks for redirecting the login to our custom login
+	// hooks for login
 	add_action("init","preventPassowrdChange");
-	add_action("init","goto_login_page");
-	add_action("wp_login_failed", "goto_login_page");
-	add_filter("authenticate", "goto_login_page", 1, 3);
-	add_action("wp_logout", "goto_login_page");
+	add_action("login_footer", "loginForm");
 }
 
 //____________________________________________________________________________________________________________
+
+function loginForm(){
+	?>
+	<script src="<?php echo plugin_dir_url( __FILE__ ) . '/js/blockstack sso.js'; ?>"></script>
+	<script>
+		document.addEventListener("DOMContentLoaded", function(event) {
+			var form = document.getElementById("loginform");
+			var btn = document.createElement("INPUT");
+			btn.type = "button";
+			btn.value = "Sign in with blockstack.";
+			btn.className = "button button-primary button-large";
+			btn.style = "position: relative; top: 20px; width: 100%";
+
+			btn.addEventListener("click", function(event) {
+				event.preventDefault();
+				Blockstack_sso.login().then((url) => {
+					window.location.replace(url);
+				}).catch((err) => {
+					console.error("Error: " + err);
+				});
+			});
+
+			form.appendChild(btn);
+		});
+	</script>
+	<?php
+}
 
 function preventPassowrdChange(){
 	$user = wp_get_current_user();
 
 	if($user->exists() && get_user_meta($user->ID, "blockstack_user", true)){
-		add_filter('show_password_fields',create_function('$nopass_profile','return false;'));
-		add_filter('allow_password_reset',create_function('$nopass_login','return false;'));
+		add_filter('show_password_fields', create_function("$nopass_profile", "return false;"));
+		add_filter("allow_password_reset", create_function("$nopass_login", "return false;"));
 	}
 }
 
 function rewriteRules($wp_rewrite){
-	$feed_rules = array(
-		"blockstack-login/?$" => "index.php?bslogin=1",
-		"manifest.json/?$" => "index.php?manifest=1"
-	);
+	$feed_rules = array("manifest.json/?$" => "index.php?manifest=1");
 	$wp_rewrite->rules = $feed_rules + $wp_rewrite->rules;
 
 	return $wp_rewrite->rules;
@@ -58,23 +79,14 @@ function rewriteRules($wp_rewrite){
 
 
 function queryVars($query_vars){
-	$query_vars[] = "bslogin";
 	$query_vars[] = "manifest";
 	$query_vars[] = "authResponse";
-	$query_vars[] = "verificationHash";
-	$query_vars[] = "bsrequest";
 
 	return $query_vars;
 };
 
 
 function templateRedirect(){
-	$bslogin = intval(get_query_var("bslogin"));
-	if($bslogin){
-		include plugin_dir_path( __FILE__ ) . 'pages/login.php';
-		die;
-	}
-
 	$manifest = intval( get_query_var("manifest"));
 	if($manifest){
 		include plugin_dir_path( __FILE__ ) . "pages/manifest.php";
@@ -86,26 +98,7 @@ function templateRedirect(){
 		include plugin_dir_path( __FILE__ ) . "pages/authPage.php";
 		die;
 	}
-
-	$bsrequest = get_query_var("bsrequest");
-	$verificationHash = get_query_var("verificationHash");
-	if($bsrequest || $verificationHash){
-		include plugin_dir_path( __FILE__ ) . "pages/auth.php";
-		die;
-	}
 };
-
-//________________________________________________________________________________________________________________________
-
-function goto_login_page() {
-	$login_page = home_url("/index.php?bslogin=1");
-	$page = basename($_SERVER["REQUEST_URI"]);
-
-	if($page == "wp-login.php" && $_SERVER["REQUEST_METHOD"] == "GET") {
-		wp_redirect($login_page);
-		exit;
-	}
-}
 
 //__________________________________________________________________________________________________________________________
 
