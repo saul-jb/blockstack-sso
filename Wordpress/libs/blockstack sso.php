@@ -6,8 +6,6 @@
 */
 
 class Blockstack_sso {
-	private $secret = "secret";
-
 	public function __construct(){
 		session_start();
 	}
