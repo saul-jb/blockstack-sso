@@ -48,3 +48,10 @@ $blkstk = new Blockstack_sso();
 ```PHP
 $blkstk->auth();
 ```
+
+## Build
+To build the blockstack sso.min.js run:
+```BASH
+npm i;
+npm run all;
+```

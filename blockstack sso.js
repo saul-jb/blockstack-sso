@@ -1,9 +1,3 @@
-/*
-	This module intergrates blockstack with php.
-	Author: Saul Boyd (avikar.io)
-	License: GPL (http://www.gnu.org/copyleft/gpl.html)
-*/
-
 blockstack = require('blockstack');
 jsontokens = require('jsontokens');
 
@@ -83,7 +77,6 @@ var Blockstack_sso = (() => {
 			const req = new XMLHttpRequest();
 			req.open(method, url, true);
 			req.setRequestHeader("Content-type", "application/json");
-			//req.onload = () => req.status === 200 ? resolve(req.response) : reject(Error(req.statusText));
 			req.onreadystatechange = (() => {
 				if(req.status === 200 && req.readyState === 4){
 					resolve(req.responseText);
