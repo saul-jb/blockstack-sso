@@ -40,7 +40,7 @@ Blockstack_sso.phpSignIn(userData).then((res) => {
 
 ### php Blockstack_sso init
 ```PHP
-include( plugin_dir_path( __FILE__ ) . "../libs/blockstack sso.php");
+include( "blockstack_sso.php" );
 $blkstk = new Blockstack_sso();
 ```
 
@@ -50,7 +50,7 @@ $blkstk->auth();
 ```
 
 ## Build
-To build the "blockstack sso.min.js" file, run:
+To build the "blockstack_sso.min.js" file, run:
 ```BASH
 npm i;
 npm run all;
