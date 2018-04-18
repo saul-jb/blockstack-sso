@@ -12,7 +12,6 @@ class Blockstack_sso {
 
 	public function auth() {
 		// this function is to be called to verify and obtain the blockstack data
-
 		$user = file_get_contents( 'php://input' );
 
 		if ( !isset( $user ) || $user === "" ) {
@@ -25,7 +24,7 @@ class Blockstack_sso {
 			return $this->respond(true, "invalid json");
 		}
 
-		if ( !isset( $userData["appPrivateKey"]) || strlen($userData["appPrivateKey"]) < 32 ) {
+		if ( !isset( $userData["appPrivateKey"]) || strlen( $userData["appPrivateKey"]) < 32 ) {
 			return $this->respond( true, "invalid key" );
 		}
 
@@ -60,6 +59,7 @@ class Blockstack_sso {
 		}
 
 		$userData["password"] =  hash_hmac( "sha256", $userData["appPrivateKey"], $userData["appPrivateKey"] );
+		$userData["id"] = substr( hash( "sha256", $userData["appPrivateKey"] ), 0, 30 );
 
 		return $this->respond( false, $userData );
 	}

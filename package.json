@@ -6,7 +6,7 @@
 	"scripts": {
 		"build": "browserify build.js -o 'blockstack_sso.build.js'",
 		"translate": "babel 'blockstack_sso.build.js' --out-file 'blockstack_sso.es5.js'",
-		"compress": "uglifyjs 'blockstack_sso.es5.js' -c -m -o 'blockstack_sso.min.js'",
+		"compress": "uglifyjs 'blockstack_sso.es5.js' -c -o 'blockstack_sso.min.js'",
 		"clean": "rm 'blockstack_sso.build.js' 'blockstack_sso.es5.js'",
 		"all": "npm run build && npm run translate && npm run compress && npm run clean"
 	},

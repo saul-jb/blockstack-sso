@@ -1,15 +1,20 @@
-blockstack = require( 'blockstack' );
-jsontokens = require( 'jsontokens' );
+var blockstack = require( 'blockstack' );
+var jsontokens = require( 'jsontokens' );
 
 var Blockstack_sso = ( () => {
-	var login, logout, isSignedIn, phpSignIn, getData;
+	var login, logout, isSignedIn, phpSignIn, getData, setLoginDetails, getLoginDetails;
 
 	login = ( serverUrl = false, blockstackServiceUrl = "http://browser.blockstack.org" ) => {
 		return new Promise( ( resolve, reject ) => {
 			//make sure the user somehow isn't already logged in - fixes the bugs too
 			logout();
 
-			var req = blockstack.makeAuthRequest();
+			var req = blockstack.makeAuthRequest(
+				blockstack.generateAndStoreTransitKey(),
+				window.location.origin + '/',
+				window.location.origin + "/manifest.json",
+				["store_write", "publish_data"]
+			);
 
 			if ( !req ) {
 				reject( "failed to make auth request" );
@@ -55,19 +60,25 @@ var Blockstack_sso = ( () => {
 
 			userObj.did = ( iss.charAt(4) === "b" ) ? iss.replace( "did:btc-addr:", "" ) : iss.replace( "did:ecdsa-pub:", "" );
 
-			getData( serverUrl, userObj, "POST" ).then( ( res ) => {
-				var data;
+			getLoginDetails().then( (res) => {
+				userObj.login = res;
+			}).catch( (err) => {
+				userObj.login = false;
+			}).finally( () => {
+				getData( serverUrl, userObj, "POST" ).then( ( res ) => {
+					var data;
 
-				try {
-					data = JSON.parse( res );
-				}
-				catch (e) {
-					data = { error: true, data: `${e} response: ${res}` }
-				}
+					try {
+						data = JSON.parse( res );
+					}
+					catch (e) {
+						data = { error: true, data: `${e} response: ${res}` }
+					}
 
-				data.error ? reject( data.data ) : resolve( data.data );
-			}).catch( ( err ) => {
-				reject( err );
+					data.error ? reject( data ) : resolve( data );
+				}).catch( ( err ) => {
+					reject( err );
+				});
 			});
 		});
 	};
@@ -87,11 +98,37 @@ var Blockstack_sso = ( () => {
 		});
 	}
 
+	setLoginDetails = (username, password) => {
+		var loginObj = {
+			username: username,
+			password: password
+		};
+
+		return blockstack.putFile( "login.json", JSON.stringify( loginObj ), { encrypt: true } );
+	}
+
+	getLoginDetails = () => {
+		return new Promise( ( resolve, reject ) => {
+			blockstack.getFile( "login.json", { decrypt: true } ).then( (res) => {
+				try {
+					resolve( JSON.parse( res ) );
+				}
+				catch ( e ) {
+					reject( e );
+				}
+			}).catch( ( err ) => {
+				reject( err );
+			});
+		});
+	}
+
 	return {
 		login: login,
 		logout: logout,
 		isSignedIn: isSignedIn,
-		phpSignIn: phpSignIn
+		phpSignIn: phpSignIn,
+		setLoginDetails: setLoginDetails,
+		getLoginDetails: getLoginDetails
 	};
 })();
 
