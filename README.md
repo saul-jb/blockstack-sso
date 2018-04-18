@@ -76,13 +76,21 @@ $response = $blkstk->auth();
 ```
 
 $response["error"] will contain a boolean if the authentication has encountered an error.<br />
+<br />
 $response["data"] will contain the error message if there is an error or the userdata if there is no error.<br />
+<br />
 $response["data"] may contain some extra settings (listed below) in addition to the ones blockstack uses allowing you to have more options when configuring this library.<br />
+<br />
 $response["data"]["password"] will contain an application unique password<br />
+<br />
 $response["data"]["id"] will cointain an application unique ID string<br />
+<br />
 $response["data"]["did"] will cotain the user's decentralised ID<br />
-$response["data"]["login"] will either contain false (if the login details have NOT been set on the client) or contain the following paramets:<br />
+<br />
+$response["data"]["login"] will either contain false (if the login details have NOT been set on the client) or contain the following parameters:<br />
+<br />
 $response["data"]["login"]["username"] will be the locally set application specific username<br />
+<br />
 $response["data"]["login"]["password"] will be the locally set application specific password<br />
 <br />
 The idea behind the addional login username and password is that it allows the user to save and automatically send it to the server giving the possiblity of linking accounts and custom username/passwords.
