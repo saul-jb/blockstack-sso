@@ -5,7 +5,9 @@ Single sign-on for PHP apps using blockstack.
 
 ### Requirements
 All client side files need the blockstack sso.min.js file included.<br />
-All server side files need the blockstack sso.php included.
+All server side files need the blockstack sso.php included.<br />
+The manifest file must have the "Access-Control-Allow-Origin: * " set<br />
+SSL must be enabled in order to use the blockstack browser.
 
 ### Basic usage
 
