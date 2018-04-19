@@ -4,15 +4,15 @@ var jsontokens = require( 'jsontokens' );
 var Blockstack_sso = ( () => {
 	var login, logout, isSignedIn, phpSignIn, getData, setLoginDetails, getLoginDetails;
 
-	login = ( serverUrl = false, blockstackServiceUrl = "http://browser.blockstack.org" ) => {
+	login = ( redirectUrl = false, manifest = false, blockstackServiceUrl = "http://browser.blockstack.org" ) => {
 		return new Promise( ( resolve, reject ) => {
 			//make sure the user somehow isn't already logged in - fixes the bugs too
 			logout();
 
 			var req = blockstack.makeAuthRequest(
 				blockstack.generateAndStoreTransitKey(),
-				window.location.origin + '/',
-				window.location.origin + "/manifest.json",
+				redirectUrl ? redirectUrl : `${window.location.origin}/`,
+				manifest ? manifest : `${window.location.origin}/manifest.json`,
 				["store_write", "publish_data"]
 			);
 

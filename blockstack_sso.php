@@ -6,9 +6,7 @@
 */
 
 class Blockstack_sso {
-	public function __construct() {
-		session_start();
-	}
+	public function __construct() {}
 
 	public function auth() {
 		// this function is to be called to verify and obtain the blockstack data
