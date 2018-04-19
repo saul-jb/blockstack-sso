@@ -54,8 +54,12 @@ var Blockstack_sso = ( () => {
 			var token = jsontokens.decodeToken( param );
 			var iss = token.payload.iss;
 
+			if ( !param ) {
+				reject( { error: true, data: "Missing 'authResponse' parameter." } );
+			}
+
 			if ( !iss ) {
-				reject( "missing iss/did" )
+				reject( { error: true, data: "Missing iss/did." } )
 			}
 
 			userObj.did = ( iss.charAt(4) === "b" ) ? iss.replace( "did:btc-addr:", "" ) : iss.replace( "did:ecdsa-pub:", "" );
