@@ -14,7 +14,7 @@ This library is to help provide a method for Single sign-on usingblockstack for 
 ### Basic usage
 
 #### Manifest page
-We have to have a manifest page for the blockstack authentication service to access otherwise the service will not work, the manifest must have the server's url and the
+There must be a manifest page for the blockstack authentication service to access otherwise the service will not work, the manifest must have the server's url and the
  "Access-Control-Allow-Origin: * " header set or it will not work on the blockstack authentication service. The defualt manifest location is at: "your.domain/manifest.json".<br />
 <br />
 ```JS
@@ -33,8 +33,8 @@ We have to have a manifest page for the blockstack authentication service to acc
 ```
 
 #### Sign in page
-First we are required to include the "blockstack_sso.min.js" script to the page. We can then create a button on the page for the users to click when they want to sign
- in. We should add the event listener: "DOMContentLoaded" to the document to ensure that the "blockstack_sso.min.js" is loaded before attempting to use it. We can then add a
+First it is required to include the "blockstack_sso.min.js" script to the page. Then a button can be created on the page for the users to click when they want to sign
+ in. An event listener: "DOMContentLoaded" should be added to the document to ensure that the "blockstack_sso.min.js" is loaded before attempting to use it. Then add a
  "click" event listner on the button and call "Blockstack_sso.login()" to create the authentication url, then we can redirect the page to this url so blockstack can get
  the users permission to share their data with the app.<br />
 <br />
@@ -59,8 +59,8 @@ First we are required to include the "blockstack_sso.min.js" script to the page.
 ```
 
 #### Authentication page
-Again we have to include the "blockstack_sso.min.js" script to the page, and again we will wait for it to have loaded using the "DOMContentLoaded" listener.
- Then we will call the Blockstack_sso.isSignedIn() method which will check that the user is logged in and return the user data. We can then call the
+Again it is necessary to include the "blockstack_sso.min.js" script to the page, and again the "DOMContentLoaded" listener should be added to ensure it is loaded before using it.
+ Then call the Blockstack_sso.isSignedIn() method which will check that the user is logged in and return the user data. After that call the
  "Blockstack_sso.phpSignIn()" method with the user's data as the first paarameter and a url to POST the data to as the second.<br />
 <br />
 ```HTML
@@ -88,9 +88,9 @@ Again we have to include the "blockstack_sso.min.js" script to the page, and aga
 ```
 
 #### PHP authentication page
-There should be a PHP page at the location we sent the post data to waiting to receive the data. We first have to include the "blockstack_sso.php" library and
- initialise is by calling "$blkstk = new Blockstack_sso();" then we can obtain and validate the POST data by calling "$blkstk->auth()" which will return a json
- object containg the user data or the error message. Then we should check if the response has the parameter "error" set to true and exit if it is due to the data
+There should be a PHP page at the location we sent the post data to waiting to receive the data. First include the "blockstack_sso.php" library and
+ initialise is by calling "$blkstk = new Blockstack_sso();" then obtain and validate the POST data by calling "$blkstk->auth()" which will return a json
+ object containg the user data or the error message. Then check if the response has the parameter "error" set to true and exit if it is due to the data
  being invalid, or otherwise create a user on the php app with the returned data.<br />
 <br />
 ```PHP
