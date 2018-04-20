@@ -1,15 +1,15 @@
 <?php
-/*
-	This class intergrates blockstack with php.
-	Author: Saul Boyd (avikar.io)
-	License: GPL (http://www.gnu.org/copyleft/gpl.html)
+/**
+ * This class intergrates blockstack with php.
+ * Author: Saul Boyd (avikar.io)
+ * License: GPL (http://www.gnu.org/copyleft/gpl.html)
 */
 
 class Blockstack_sso {
 	public function __construct() {}
 
+	// this function is to be called to verify and obtain the blockstack data
 	public function auth() {
-		// this function is to be called to verify and obtain the blockstack data
 		$user = file_get_contents( 'php://input' );
 
 		if ( !isset( $user ) || $user === "" ) {
@@ -30,10 +30,9 @@ class Blockstack_sso {
 			return $this->respond( true, "missing did" );
 		}
 
+		// check to see if we have failed to get the name and try for the hosted profile data
+		// this is to fix a bug in the browser version not returning any profile data
 		if ( !isset( $userData["profile"]["name"] ) ) {
-			// check to see if we have failed to get the name and try for the hosted profile data
-			// this is to fix a bug in the browser version not returning any profile data
-
 			$profileData = $this->getProfileFromDid( $userData["did"] );
 
 			if ( $profileData ) {
@@ -71,8 +70,8 @@ class Blockstack_sso {
 		);
 	}
 
+	// Decodes the token and returns it in an array
 	private function decodeToken($token){
-		// Decodes the token and returns it in an array
 		$authParts = explode( '.', $token );
 
 		if ( count($authParts) != 3 ) {
