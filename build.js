@@ -1,1 +1,1 @@
-window.Blockstack_sso = require("./blockstack_sso.js");
+window.Blockstack_sso = require("./blockstackCommon.js");

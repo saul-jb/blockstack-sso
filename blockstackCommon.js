@@ -1,7 +1,7 @@
 var blockstack = require( 'blockstack' );
 var jsontokens = require( 'jsontokens' );
 
-var Blockstack_sso = ( () => {
+var BlockstackCommon = ( () => {
 	var login, logout, isSignedIn, phpSignIn, getData, setLoginDetails, getLoginDetails;
 
 	login = ( redirectUrl = false, manifest = false, blockstackServiceUrl = "http://browser.blockstack.org" ) => {
@@ -136,4 +136,4 @@ var Blockstack_sso = ( () => {
 	};
 })();
 
-module.exports = Blockstack_sso;
+module.exports = BlockstackCommon;

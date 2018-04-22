@@ -5,7 +5,7 @@
  * License: GPL (http://www.gnu.org/copyleft/gpl.html)
 */
 
-class Blockstack_sso {
+class BlockstackCommon {
 	public function __construct() {}
 
 	// this function is to be called to verify and obtain the blockstack data
