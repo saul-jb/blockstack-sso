@@ -1,4 +1,4 @@
-# Blockstack-SSO
+# blockstack-sso
 Single sign-on for PHP apps using blockstack.<br />
 <br />
 This library is to help provide a method for Single sign-on usingblockstack for PHP apps like wordpress, media wiki, jooml etc.
