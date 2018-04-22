@@ -4,10 +4,10 @@
 	"description": "This broject is for building the client side files.",
 	"main": " ",
 	"scripts": {
-		"build": "browserify build.js -o 'BlockstackCommon.build.js'",
-		"translate": "babel 'BlockstackCommon.build.js' --out-file 'BlockstackCommon.es5.js'",
-		"compress": "uglifyjs 'BlockstackCommon.es5.js' -c -o 'BlockstackCommon.min.js'",
-		"clean": "rm 'BlockstackCommon.build.js' 'BlockstackCommon.es5.js'",
+		"build": "browserify build.js -o 'blockstackCommon.build.js'",
+		"translate": "babel 'blockstackCommon.build.js' --out-file 'blockstackCommon.es5.js'",
+		"compress": "uglifyjs 'blockstackCommon.es5.js' -c -o 'blockstackCommon.min.js'",
+		"clean": "rm 'blockstackCommon.build.js' 'blockstackCommon.es5.js'",
 		"all": "npm run build && npm run translate && npm run compress && npm run clean"
 	},
 	"author": "Saul Boyd",
