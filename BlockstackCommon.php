@@ -16,7 +16,7 @@ class BlockstackCommon {
 			return $this->respond(true, "invalid post parameters");
 		}
 
-		$userData = json_decode( stripslashes( $user ), true );
+		$userData = json_decode( $user, true );
 
 		if ( json_last_error() != JSON_ERROR_NONE ) {
 			return $this->respond(true, "invalid json");
