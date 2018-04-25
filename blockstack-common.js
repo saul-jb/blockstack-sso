@@ -2,9 +2,9 @@ var blockstack = require('blockstack');
 var jsontokens = require('jsontokens');
 
 var BlockstackCommon = (() => {
-	var login, logout, isSignedIn, phpSignIn, getData, setLoginDetails, getLoginDetails;
+	var login, logout, isSignedIn, phpSignIn, getData, setLoginDetails, getLoginDetails, dappLoaded;
 
-	login = (redirectUrl = false, manifest = false, blockstackServiceUrl = "http://browser.blockstack.org") => {
+	login = (redirectUrl = false, manifest = false) => {
 		return new Promise((resolve, reject) => {
 			//make sure the user somehow isn't already logged in - fixes the bugs too
 			logout();
@@ -20,7 +20,12 @@ var BlockstackCommon = (() => {
 				reject( "failed to make auth request" );
 			}
 
-			resolve(`${blockstackServiceUrl}/auth?authRequest=${req}`);
+
+			dappLoaded().then(() => {
+				resolve(`http://localhost:8888/auth?authRequest=${req}`);
+			}).catch(() => {
+				resolve(`http://browser.blockstack.org/auth?authRequest=${req}`);
+			});
 		});
 	};
 
@@ -90,7 +95,9 @@ var BlockstackCommon = (() => {
 					}).catch((err) => {
 						reject(err);
 					});
-				} else resolve(userObj);
+				} else {
+					resolve(userObj);
+				}
 			});
 		});
 	};
@@ -108,7 +115,7 @@ var BlockstackCommon = (() => {
 			req.onerror = (e) => reject(Error(`Network Error: ${e}`));
     		req.send(JSON.stringify(data));
 		});
-	}
+	};
 
 	setLoginDetails = (username, password) => {
 		var loginObj = {
@@ -117,7 +124,7 @@ var BlockstackCommon = (() => {
 		};
 
 		return blockstack.putFile("login.json", JSON.stringify(loginObj), { encrypt: true });
-	}
+	};
 
 	getLoginDetails = () => {
 		return new Promise((resolve, reject) => {
@@ -132,7 +139,31 @@ var BlockstackCommon = (() => {
 				reject(err);
 			});
 		});
-	}
+	};
+
+	dappLoaded = () => {
+		return new Promise((resolve, reject) => {
+			// Request the test image from the local dapp service
+			var img = new Image()
+			img.src = 'http://localhost:8888/images/icon-nav-profile.svg';
+
+			// Wait 100ms to give the image time to load and then start the redirect procedure
+			setTimeout(() => {
+
+				// Test-image height is non-zero, Blockstack dapp is serving on local port 8888
+				if(img.height > 0) {
+					console.log('Local blockstack CORS proxy responded, using local service');
+					resolve();
+				}
+
+				// Test-image height is zero, fallback to web-based Blockstack service
+				else {
+					console.log('Local blockstack CORS proxy not present, falling back on web service');
+					reject();
+				}
+			}, 100);
+		});
+	};
 
 	return {
 		login: login,
@@ -140,7 +171,8 @@ var BlockstackCommon = (() => {
 		isSignedIn: isSignedIn,
 		phpSignIn: phpSignIn,
 		setLoginDetails: setLoginDetails,
-		getLoginDetails: getLoginDetails
+		getLoginDetails: getLoginDetails,
+		dappLoaded: dappLoaded
 	};
 })();
 
