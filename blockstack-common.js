@@ -71,17 +71,17 @@ var BlockstackCommon = (() => {
 
 			userObj.did = (iss.charAt(4) === "b") ? iss.replace("did:btc-addr:", "") : iss.replace("did:ecdsa-pub:", "");
 
-			getLoginDetails().then( (res) => {
+			getLoginDetails().then((res) => {
 				userObj.login = res;
 			}).catch((err) => {
 				userObj.login = false;
 			}).finally(() => {
 				if (serverUrl) {
-					getData(serverUrl, userObj, "POST" ).then((res) => {
+					getData(serverUrl, userObj, "POST").then((res) => {
 						var data;
 
 						try {
-							data = JSON.parse( res );
+							data = JSON.parse(res);
 						}
 						catch(e) {
 							data = { error: true, data: `${e} response: ${res}` }
