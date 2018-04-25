@@ -49,7 +49,8 @@ var BlockstackCommon = (() => {
 	};
 
 	/**
-	 * Query the PHP app to validate the Blockstack data and log in the user
+	 * Query the PHP app to validate the Blockstack data and log in the user.
+	 * 
 	 * @param object userObj - the data returned from the Blockstack browser
 	 * @param string serverUrl - the URL to POST the data to using XHR (or return the POST data to send if false)
 	 * @return object - the XHR promise or if serverUrl was false, the POST data to send for validation
@@ -90,7 +91,7 @@ var BlockstackCommon = (() => {
 					}).catch((err) => {
 						reject(err);
 					});
-				} else return userObj;
+				} else resolve(userObj);
 			});
 		});
 	};
