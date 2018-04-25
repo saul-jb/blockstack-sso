@@ -1,11 +1,11 @@
-var blockstack = require( 'blockstack' );
-var jsontokens = require( 'jsontokens' );
+var blockstack = require('blockstack');
+var jsontokens = require('jsontokens');
 
-var BlockstackCommon = ( () => {
+var BlockstackCommon = (() => {
 	var login, logout, isSignedIn, phpSignIn, getData, setLoginDetails, getLoginDetails;
 
-	login = ( redirectUrl = false, manifest = false, blockstackServiceUrl = "http://browser.blockstack.org" ) => {
-		return new Promise( ( resolve, reject ) => {
+	login = (redirectUrl = false, manifest = false, blockstackServiceUrl = "http://browser.blockstack.org") => {
+		return new Promise((resolve, reject) => {
 			//make sure the user somehow isn't already logged in - fixes the bugs too
 			logout();
 
@@ -16,89 +16,97 @@ var BlockstackCommon = ( () => {
 				["store_write", "publish_data"]
 			);
 
-			if ( !req ) {
+			if (!req) {
 				reject( "failed to make auth request" );
 			}
 
-			resolve( `${blockstackServiceUrl}/auth?authRequest=${req}` );
+			resolve(`${blockstackServiceUrl}/auth?authRequest=${req}`);
 		});
 	};
 
-	logout = ( redirectUrl = null ) => {
-		blockstack.signUserOut( redirectUrl );
+	logout = (redirectUrl = null) => {
+		blockstack.signUserOut(redirectUrl);
 	};
 
 	isSignedIn = () => {
-		return new Promise( ( resolve, reject ) => {
-			if ( blockstack.isUserSignedIn() ) {
+		return new Promise((resolve, reject) => {
+			if (blockstack.isUserSignedIn()) {
 				var userData = blockstack.loadUserData();
 
-				resolve( userData );
+				resolve(userData);
 			}
-			else if ( blockstack.isSignInPending() ) {
-				blockstack.handlePendingSignIn().then( ( userData ) => {
-					resolve( userData );
-				}).catch( err => {
-					reject( err );
+			else if (blockstack.isSignInPending()) {
+				blockstack.handlePendingSignIn().then((userData) => {
+					resolve(userData);
+				}).catch(err => {
+					reject(err);
 				});
 			}
 			else {
-				reject( "Not signed in" );
+				reject("Not signed in");
 			}
 		});
 	};
 
-	phpSignIn = ( userObj, serverUrl ) => {
-		return new Promise( ( resolve, reject ) => {
-			var param = location.search.split( "authResponse=" )[1] ? location.search.split( "authResponse=" )[1] : false;
-			var token = jsontokens.decodeToken( param );
+	/**
+	 * Query the PHP app to validate the Blockstack data and log in the user
+	 * @param object userObj - the data returned from the Blockstack browser
+	 * @param string serverUrl - the URL to POST the data to using XHR (or return the POST data to send if false)
+	 * @return object - the XHR promise or if serverUrl was false, the POST data to send for validation
+	 */
+	phpSignIn = (userObj, serverUrl = false) => {
+		return new Promise((resolve, reject) => {
+			var param = location.search.split("authResponse=")[1] ? location.search.split("authResponse=")[1] : false;
+			var token = jsontokens.decodeToken(param);
 			var iss = token.payload.iss;
 
-			if ( !param ) {
-				reject( { error: true, data: "Missing 'authResponse' parameter." } );
+			if (!param) {
+				reject({ error: true, data: "Missing 'authResponse' parameter." });
 			}
 
-			if ( !iss ) {
-				reject( { error: true, data: "Missing iss/did." } )
+			if(!iss) {
+				reject({ error: true, data: "Missing iss/did." })
 			}
 
-			userObj.did = ( iss.charAt(4) === "b" ) ? iss.replace( "did:btc-addr:", "" ) : iss.replace( "did:ecdsa-pub:", "" );
+			userObj.did = (iss.charAt(4) === "b") ? iss.replace("did:btc-addr:", "") : iss.replace("did:ecdsa-pub:", "");
 
 			getLoginDetails().then( (res) => {
 				userObj.login = res;
-			}).catch( (err) => {
+			}).catch((err) => {
 				userObj.login = false;
-			}).finally( () => {
-				getData( serverUrl, userObj, "POST" ).then( ( res ) => {
-					var data;
+			}).finally(() => {
+				if (serverUrl) {
+					getData(serverUrl, userObj, "POST" ).then((res) => {
+						var data;
 
-					try {
-						data = JSON.parse( res );
-					}
-					catch (e) {
-						data = { error: true, data: `${e} response: ${res}` }
-					}
+						try {
+							data = JSON.parse( res );
+						}
+						catch(e) {
+							data = { error: true, data: `${e} response: ${res}` }
+						}
 
-					data.error ? reject( data ) : resolve( data );
-				}).catch( ( err ) => {
-					reject( err );
-				});
+						data.error ? reject(data) : resolve(data);
+					}).catch((err) => {
+						reject(err);
+					});
+				} else return userObj;
 			});
 		});
 	};
 
-	getData = ( url, data, method = "GET" ) => {
-		return new Promise( ( resolve, reject ) => {
+	getData = (url, data, method = "GET") => {
+		return new Promise((resolve, reject) => {
 			const req = new XMLHttpRequest();
-			req.open( method, url, true );
-			req.setRequestHeader( "Content-type", "application/json" );
+			req.open(method, url, true);
+			req.setRequestHeader("Content-type", "application/json");
 			req.onreadystatechange = ( () => {
-				if ( req.status === 200 && req.readyState === 4 ) {
-					resolve( req.responseText );
+				if (req.status === 200 && req.readyState === 4) {
+					resolve(req.responseText);
 				}
 			});
-			req.onerror = ( e ) => reject( Error( `Network Error: ${e}` ) );
-    		req.send( JSON.stringify( data ) );
+			req.onerror = (e) => reject(Error(`Network Error: ${e}`));
+    		req.send(JSON.stringify(data));
 		});
 	}
 
@@ -108,20 +116,20 @@ var BlockstackCommon = ( () => {
 			password: password
 		};
 
-		return blockstack.putFile( "login.json", JSON.stringify( loginObj ), { encrypt: true } );
+		return blockstack.putFile("login.json", JSON.stringify(loginObj), { encrypt: true });
 	}
 
 	getLoginDetails = () => {
-		return new Promise( ( resolve, reject ) => {
-			blockstack.getFile( "login.json", { decrypt: true } ).then( (res) => {
+		return new Promise((resolve, reject) => {
+			blockstack.getFile("login.json", { decrypt: true }).then((res) => {
 				try {
-					resolve( JSON.parse( res ) );
+					resolve(JSON.parse(res));
 				}
-				catch ( e ) {
-					reject( e );
+				catch (e) {
+					reject(e);
 				}
-			}).catch( ( err ) => {
-				reject( err );
+			}).catch((err) => {
+				reject(err);
 			});
 		});
 	}
