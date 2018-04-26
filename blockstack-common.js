@@ -141,6 +141,15 @@ var BlockstackCommon = (() => {
 		});
 	};
 
+	/**
+	 * This function detects whether the local Blockstack browser dapp is running
+	 * 
+	 * This detection is rather difficult because the services are on HTTP, but the site we're logging in to may be on HTTPS
+	 * in which case a non-HTTPS XHR request will not be allowed.
+	 *
+	 * To get around this, an image is loaded from the dapp service which doesn't suffer from the "mixed content" restriction.
+	 * We can then test after a small delay (100ms) whether we have a non-zero height for the image.
+	 */
 	dappLoaded = () => {
 		return new Promise((resolve, reject) => {
 			// Request the test image from the local dapp service
