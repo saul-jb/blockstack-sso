@@ -75,12 +75,12 @@ var BlockstackCommon = (() => {
 
 			userObj.did = (iss.charAt(4) === "b") ? iss.replace("did:btc-addr:", "") : iss.replace("did:ecdsa-pub:", "");
 
-			getLoginDetails().then((res) => {
-				userObj.login = res;
-			}).catch((err) => {
-				userObj.login = false;
-			}).finally(() => {
-				if (serverUrl) {
+			if(!serverUrl){
+				getLoginDetails().then((res) => {
+					userObj.login = res;
+				}).catch((err) => {
+					userObj.login = false;
+				}).finally(() => {
 					getData(serverUrl, userObj, "POST").then((res) => {
 						var data;
 
@@ -95,10 +95,10 @@ var BlockstackCommon = (() => {
 					}).catch((err) => {
 						reject(err);
 					});
-				} else {
-					resolve(userObj);
-				}
-			});
+				});
+			} else {
+				resolve(userObj);
+			}
 		});
 	};
 
@@ -143,7 +143,7 @@ var BlockstackCommon = (() => {
 
 	/**
 	 * This function detects whether the local Blockstack browser dapp is running
-	 * 
+	 *
 	 * This detection is rather difficult because the services are on HTTP, but the site we're logging in to may be on HTTPS
 	 * in which case a non-HTTPS XHR request will not be allowed.
 	 *

@@ -109,8 +109,9 @@ if ( $response["error"] ) {
 
 ### Login
 The login proccess starts by calling logout to prevent user issues further down, then it uses the blockstack method "makeAuthRequest" to create the JWT
- authentication token using the functions parameters if they are set and the permissions of "store_write" and "publish_data", then it creates a url to the
- blockstack service and returns it so that you can redirect the user toward the blockstack service to give their permission for the app.<br />
+ authentication token using the functions parameters if they are set and the permissions of "store_write" and "publish_data", then it check if the blockstack
+ application is running creates a url to the local blockstack service or web service if the decentralised application is not running and then
+ returns it so that you can redirect the user toward the blockstack service to give their permission for the app.<br />
 <br />
 ```JS
 /**
@@ -227,6 +228,37 @@ Blockstack_sso.phpSignIn(userData, url).then((res) => {
 }).catch((err) => {
 	// failed for because of err
 	console.error(err.errorMessage);
+});
+```
+
+### Php Blockstack_sso init
+```PHP
+include( "blockstack_sso.php" );
+
+/**
+ * Initialise the blockstack class
+ * @return {void}
+**/
+
+$blkstk = new Blockstack_sso();
+```
+
+
+### Check if the decentralised blockstack app is running
+The dappLoaded method checks if the decentralised blockstack application is running
+ by fetching an image from it (to get around cross-domain requests).<br />
+<br />
+```JS
+/**
+ * Check if the decentralised app is loaded.
+ * @return {Promise} - The promise will resolve if the decentralised application is loaded,
+ * it will reject if it has not been loaded.
+**/
+
+Blockstack_sso.dappLoaded().then(() => {
+	// The user has the blockstack browser running!
+}).catch(() => {
+	// The user is not running the blockstack browser.
 });
 ```
 
