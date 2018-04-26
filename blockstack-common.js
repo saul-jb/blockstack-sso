@@ -155,7 +155,7 @@ var BlockstackCommon = (() => {
 			var img = new Image()
 			img.src = 'http://localhost:8888/images/icon-nav-profile.svg';
 			setTimeout(() => {
-				img.height > 0 ? resolve() : reject();
+				img.height ? resolve() : reject();
 			}, 100);
 		});
 	};
