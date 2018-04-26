@@ -75,7 +75,7 @@ var BlockstackCommon = (() => {
 
 			userObj.did = (iss.charAt(4) === "b") ? iss.replace("did:btc-addr:", "") : iss.replace("did:ecdsa-pub:", "");
 
-			if(!serverUrl){
+			if(serverUrl){
 				getLoginDetails().then((res) => {
 					userObj.login = res;
 				}).catch((err) => {
