@@ -152,24 +152,10 @@ var BlockstackCommon = (() => {
 	 */
 	dappLoaded = () => {
 		return new Promise((resolve, reject) => {
-			// Request the test image from the local dapp service
 			var img = new Image()
 			img.src = 'http://localhost:8888/images/icon-nav-profile.svg';
-
-			// Wait 100ms to give the image time to load and then start the redirect procedure
 			setTimeout(() => {
-
-				// Test-image height is non-zero, Blockstack dapp is serving on local port 8888
-				if(img.height > 0) {
-					console.log('Local blockstack CORS proxy responded, using local service');
-					resolve();
-				}
-
-				// Test-image height is zero, fallback to web-based Blockstack service
-				else {
-					console.log('Local blockstack CORS proxy not present, falling back on web service');
-					reject();
-				}
+				img.height > 0 ? resolve() : reject();
 			}, 100);
 		});
 	};
