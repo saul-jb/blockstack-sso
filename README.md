@@ -1,9 +1,27 @@
 # blockstack-sso
-Single sign-on for PHP apps using blockstack.<br />
-<br />
-This library is to help provide a method for Single sign-on usingblockstack for PHP apps like wordpress, media wiki, jooml etc.
+Single sign-on for PHP apps using blockstack.
+
+This library is to help provide a method for Single sign-on using Blockstack for PHP apps like Wordpress, MediaWiki and Joomla etc. Actually it can be used for providing Blockstack SSO for any web-server based technology, but has more options available specifically for PHP.
+
+It's just like the familiar sign-in with Google/facebook/Twitter buttons we see everywhere, but with Blockstack you own your profile rather than relying on a company to look after it for you, and trusting that they'll respect your privacy and will always grant you access to your data.
+
+The general flow is that a user clicks on the "sign in with blockstack" button, they're directed to the Blockstack browser - either the local distributed app running on their own device, or if that's not installed, the [web-based Blockstack browser](http://browser.blockstack.org/). The Blockstack app presents the use with a sign-in form advising them of the access that's being requested and allowing them to select which of their Blockstack IDs they'd like to sign in with.
+
+If the selected Blockstack ID is already in use on the site, the user will then be automatically logged in to the account it's been previously associated with. Otherwise the user will be prompted to specify a username and password so they can link the Blockstack ID to one of the sites existing user accounts, or the sites can create a new account if public account creation is allowd on the site.
+
+If the selected account is already linked to a different Blockstack ID, then the user should be prompted to either unlink the account before continuing, or to select a different account to link to.
+
+### Current implementations
+
+* (Wordpress Blockstack SSO)[https://github.com/saul-avikar/wordpress-blockstack-sso]
+* (MediaWiki Blockstack SSO)[https://github.com/saul-avikar/mediawiki-blockstack-sso]
 
 ## Usage
+There are two different general ways of using this mechanism:
+
+The first is to allow Blockstack to maintain the information about what Blockstack IDs link to what accounts in the site, and to store the account login details along with this data so it can perform a normal login on the site on behalf of the user. This method uses both [blockstack-common.js](https://github.com/saul-avikar/blockstack-sso/blob/master/blockstack-common.js) and [BlockstackCommon.php](https://github.com/saul-avikar/blockstack-sso/blob/master/BlockstackCommon.php) on the server side. The (Wordpress Blockstack SSO)[https://github.com/saul-avikar/wordpress-blockstack-sso] implementation is an example of using the method.
+
+The second method is for the site to maintain the information about the what Blockstack IDs link its accounts, and to handle the logging in and account creation in its own way. This method uses only [blockstack-common.js](https://github.com/saul-avikar/blockstack-sso/blob/master/blockstack-common.js), because the server-side is handled in a custom way by the site's own SSO code. Since this method doesn't require the PHP class, it can also be used for sites that use any server-side technology. The (MediaWiki Blockstack SSO)[https://github.com/saul-avikar/mediawiki-blockstack-sso] implementaton is an example of using the method.
 
 ### Requirements
 * All client side files need the "blockstack_sso.min.js" file included.
