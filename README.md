@@ -11,15 +11,15 @@ If the selected account is already linked to a different Blockstack ID, then the
 
 ### Current implementations
 
-* (Wordpress Blockstack SSO)[https://github.com/saul-avikar/wordpress-blockstack-sso]
-* (MediaWiki Blockstack SSO)[https://github.com/saul-avikar/mediawiki-blockstack-sso]
+* [Wordpress Blockstack SSO](https://github.com/saul-avikar/wordpress-blockstack-sso)
+* [MediaWiki Blockstack SSO](https://github.com/saul-avikar/mediawiki-blockstack-sso)
 
 ## Usage
 There are two different general ways of using this mechanism:
 
-The first is to allow Blockstack to maintain the information about what Blockstack IDs link to what accounts in the site, and to store the account login details along with this data so it can perform a normal login on the site on behalf of the user. This method uses both [blockstack-common.js](https://github.com/saul-avikar/blockstack-sso/blob/master/blockstack-common.js) and [BlockstackCommon.php](https://github.com/saul-avikar/blockstack-sso/blob/master/BlockstackCommon.php) on the server side. The (Wordpress Blockstack SSO)[https://github.com/saul-avikar/wordpress-blockstack-sso] implementation is an example of using the method.
+The first is to allow Blockstack to maintain the information about what Blockstack IDs link to what accounts in the site, and to store the account login details along with this data so it can perform a normal login on the site on behalf of the user. This method uses both [blockstack-common.js](https://github.com/saul-avikar/blockstack-sso/blob/master/blockstack-common.js) and [BlockstackCommon.php](https://github.com/saul-avikar/blockstack-sso/blob/master/BlockstackCommon.php) on the server side. The [Wordpress Blockstack SSO](https://github.com/saul-avikar/wordpress-blockstack-sso) implementation is an example of using the method.
 
-The second method is for the site to maintain the information about the what Blockstack IDs link its accounts, and to handle the logging in and account creation in its own way. This method uses only [blockstack-common.js](https://github.com/saul-avikar/blockstack-sso/blob/master/blockstack-common.js), because the server-side is handled in a custom way by the site's own SSO code. Since this method doesn't require the PHP class, it can also be used for sites that use any server-side technology. The (MediaWiki Blockstack SSO)[https://github.com/saul-avikar/mediawiki-blockstack-sso] implementaton is an example of using the method.
+The second method is for the site to maintain the information about the what Blockstack IDs link its accounts, and to handle the logging in and account creation in its own way. This method uses only [blockstack-common.js](https://github.com/saul-avikar/blockstack-sso/blob/master/blockstack-common.js), because the server-side is handled in a custom way by the site's own SSO code. Since this method doesn't require the PHP class, it can also be used for sites that use any server-side technology. The [MediaWiki Blockstack SSO](https://github.com/saul-avikar/mediawiki-blockstack-sso) implementaton is an example of using the method.
 
 ### Requirements
 * All client side files need the "blockstack_sso.min.js" file included.
