@@ -246,7 +246,7 @@ $blkstk = new Blockstack_sso();
 
 ### Check if the decentralised blockstack app is running
 The dappLoaded method checks if the decentralised blockstack application is running
- by fetching an image from it (to get around cross-domain requests).<br />
+ by fetching an image from it (to get around cross-origin and mixed-content limitations).<br />
 <br />
 ```JS
 /**
