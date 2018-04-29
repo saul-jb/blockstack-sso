@@ -1,6 +1,4 @@
 # blockstack-sso
-Single sign-on for PHP apps using blockstack.
-
 This library is to help provide a method for Single sign-on using Blockstack for PHP apps like Wordpress, MediaWiki and Joomla etc. Actually it can be used for providing Blockstack SSO for any web-server based technology, but has more options available specifically for PHP.
 
 It's just like the familiar sign-in with Google/facebook/Twitter buttons we see everywhere, but with Blockstack you own your profile rather than relying on a company to look after it for you, and trusting that they'll respect your privacy and will always grant you access to your data.
