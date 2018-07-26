@@ -1,25 +1,24 @@
-var blockstack = require('blockstack');
-var jsontokens = require('jsontokens');
+var blockstack = require("blockstack");
+var jsontokens = require("jsontokens");
 
 var BlockstackCommon = (() => {
 	var login, logout, isSignedIn, phpSignIn, getData, setLoginDetails, getLoginDetails, dappLoaded;
 
 	login = (redirectUrl = false, manifest = false) => {
 		return new Promise((resolve, reject) => {
-			//make sure the user somehow isn't already logged in - fixes the bugs too
+			// make sure the user somehow isn't already logged in - fixes the bugs too
 			logout();
 
 			var req = blockstack.makeAuthRequest(
 				blockstack.generateAndStoreTransitKey(),
-				redirectUrl ? redirectUrl : `${window.location.origin}/`,
-				manifest ? manifest : `${window.location.origin}/manifest.json`,
+				redirectUrl || `${window.location.origin}/`,
+				manifest || `${window.location.origin}/manifest.json`,
 				["store_write", "publish_data"]
 			);
 
 			if (!req) {
-				reject( "failed to make auth request" );
+				reject("failed to make auth request");
 			}
-
 
 			dappLoaded().then(() => {
 				resolve(`http://localhost:8888/auth?authRequest=${req}`);
@@ -39,15 +38,13 @@ var BlockstackCommon = (() => {
 				var userData = blockstack.loadUserData();
 
 				resolve(userData);
-			}
-			else if (blockstack.isSignInPending()) {
+			} else if (blockstack.isSignInPending()) {
 				blockstack.handlePendingSignIn().then((userData) => {
 					resolve(userData);
 				}).catch(err => {
 					reject(err);
 				});
-			}
-			else {
+			} else {
 				reject("Not signed in");
 			}
 		});
@@ -69,13 +66,13 @@ var BlockstackCommon = (() => {
 				reject({ error: true, data: "Missing 'authResponse' parameter." });
 			}
 
-			if(!iss) {
-				reject({ error: true, data: "Missing iss/did." })
+			if (!iss) {
+				reject({ error: true, data: "Missing iss/did." });
 			}
 
 			userObj.did = (iss.charAt(4) === "b") ? iss.replace("did:btc-addr:", "") : iss.replace("did:ecdsa-pub:", "");
 
-			if(serverUrl){
+			if (serverUrl) {
 				getLoginDetails().then((res) => {
 					userObj.login = res;
 				}).catch((err) => {
@@ -86,9 +83,8 @@ var BlockstackCommon = (() => {
 
 						try {
 							data = JSON.parse(res);
-						}
-						catch(e) {
-							data = { error: true, data: `${e} response: ${res}` }
+						} catch (e) {
+							data = { error: true, data: `${e} response: ${res}` };
 						}
 
 						data.error ? reject(data) : resolve(data);
@@ -107,13 +103,13 @@ var BlockstackCommon = (() => {
 			const req = new XMLHttpRequest();
 			req.open(method, url, true);
 			req.setRequestHeader("Content-type", "application/json");
-			req.onreadystatechange = ( () => {
+			req.onreadystatechange = () => {
 				if (req.status === 200 && req.readyState === 4) {
 					resolve(req.responseText);
 				}
-			});
+			};
 			req.onerror = (e) => reject(Error(`Network Error: ${e}`));
-    		req.send(JSON.stringify(data));
+			req.send(JSON.stringify(data));
 		});
 	};
 
@@ -131,8 +127,7 @@ var BlockstackCommon = (() => {
 			blockstack.getFile("login.json", { decrypt: true }).then((res) => {
 				try {
 					resolve(JSON.parse(res));
-				}
-				catch (e) {
+				} catch (e) {
 					reject(e);
 				}
 			}).catch((err) => {
@@ -152,8 +147,8 @@ var BlockstackCommon = (() => {
 	 */
 	dappLoaded = () => {
 		return new Promise((resolve, reject) => {
-			var img = new Image()
-			img.src = 'http://localhost:8888/images/icon-nav-profile.svg';
+			var img = new Image();
+			img.src = "http://localhost:8888/images/icon-nav-profile.svg";
 			setTimeout(() => {
 				img.height ? resolve() : reject();
 			}, 100);
